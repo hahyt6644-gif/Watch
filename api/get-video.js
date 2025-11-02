@@ -1,8 +1,10 @@
 import { MongoClient } from 'mongodb';
-import fetch from 'node-fetch';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const TERABOX_COOKIE = process.env.TERABOX_COOKIE;
+const MONGODB_URI = "mongodb+srv://videobot_admin:SVMT24NlLWZV1PdY@cluster0.ggemqlz.mongodb.net/video_bot?retryWrites=true&w=majority";
+
+// Get fresh NDUS cookie from your Terabox account
+const TERABOX_COOKIE = " ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ";
+
 let cachedClient = null;
 
 async function connectToDatabase() {
@@ -18,17 +20,7 @@ async function connectToDatabase() {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  if (req.method !== 'GET') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
-  }
-
   const { video_id } = req.query;
 
   if (!video_id) {
@@ -47,35 +39,56 @@ export default async function handler(req, res) {
 
     const videoUrl = video.video_url;
 
-    // Check if Terabox link
-    if (videoUrl.includes('terabox.com') || videoUrl.includes('1024terabox.com')) {
-      // Call TeraSnap API
-      const response = await fetch('https://terasnap.netlify.app/api/download', {
+    // Check if it's a Terabox link that needs processing
+    if (videoUrl.includes('terabox.com') || videoUrl.includes('1024terabox.com') || videoUrl.includes('teraboxurl.com')) {
+      
+      console.log('Processing Terabox link:', videoUrl);
+      
+      // Call TeraSnap API to get direct/proxy video URL
+      const terasnapResponse = await fetch('https://terasnap.netlify.app/api/download', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        },
         body: JSON.stringify({
           link: videoUrl,
           cookies: TERABOX_COOKIE
         })
       });
 
-      const data = await response.json();
-
-      if (data.error) {
-        return res.status(500).json({ success: false, error: data.error });
+      if (!terasnapResponse.ok) {
+        console.error('TeraSnap API error:', terasnapResponse.status);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Failed to process Terabox link. Status: ' + terasnapResponse.status 
+        });
       }
 
+      const terasnapData = await terasnapResponse.json();
+      
+      console.log('TeraSnap response:', terasnapData);
+
+      if (terasnapData.error) {
+        return res.status(500).json({ 
+          success: false, 
+          error: 'TeraSnap error: ' + terasnapData.error 
+        });
+      }
+
+      // Return the proxied video URL
       return res.status(200).json({
         success: true,
         video: {
-          video_url: data.proxy_url,
+          video_url: terasnapData.proxy_url || terasnapData.direct_url,
           title: video.title,
-          thumbnail: data.thumbnail || null,
-          file_size: data.file_size || null
+          thumbnail: terasnapData.thumbnail || null,
+          file_size: terasnapData.file_size || null
         }
       });
+      
     } else {
-      // Direct video link
+      // Direct video link (MP4, etc.)
       return res.status(200).json({
         success: true,
         video: {
@@ -87,6 +100,9 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Get video error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 }
