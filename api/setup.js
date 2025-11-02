@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// Hardcoded MongoDB URI for testing
+const MONGODB_URI = "mongodb+srv://amitkr545545_db_user:05jVaRYWKUvlyGK2@cluster0.ggemqlz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,19 +19,22 @@ export default async function handler(req, res) {
   let client;
 
   try {
-    // Step 1: Test connection
+    // Step 1: Show connection string (masked password)
+    const maskedUri = MONGODB_URI.replace(/:[^@]+@/, ':***@');
+    results.steps.push('Connection string: ' + maskedUri);
     results.steps.push('Attempting to connect to MongoDB...');
     
     client = new MongoClient(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
     });
     
     await client.connect();
+    await client.db('admin').command({ ping: 1 });
     results.steps.push('✅ Connected to MongoDB!');
 
     const db = client.db('video_bot');
 
-    // Step 2: Clear old data (optional)
+    // Step 2: Clear old data
     results.steps.push('Clearing old data...');
     await db.collection('ad_config').deleteMany({});
     await db.collection('videos').deleteMany({});
@@ -67,7 +71,7 @@ export default async function handler(req, res) {
         created_at: new Date()
       }
     ]);
-    results.steps.push(`✅ ${videosInserted.insertedCount} videos added`);
+    results.steps.push('✅ ' + videosInserted.insertedCount + ' videos added');
 
     // Step 5: Verify data
     results.steps.push('Verifying data...');
@@ -77,7 +81,7 @@ export default async function handler(req, res) {
     const allVideos = await db.collection('videos').find().toArray();
     const adConfig = await db.collection('ad_config').findOne();
 
-    results.steps.push(`✅ Found ${videoCount} videos and ${adConfigCount} ad configs`);
+    results.steps.push('✅ Found ' + videoCount + ' videos and ' + adConfigCount + ' ad configs');
 
     // Success response
     results.success = true;
@@ -98,7 +102,14 @@ export default async function handler(req, res) {
 
   } catch (error) {
     results.error = error.message;
-    results.steps.push(`❌ Error: ${error.message}`);
+    results.steps.push('❌ Error: ' + error.message);
+    
+    // Add debug info
+    results.debug = {
+      errorName: error.name,
+      errorCode: error.code,
+      errorStack: error.stack
+    };
     
     res.status(500).json(results);
   } finally {
