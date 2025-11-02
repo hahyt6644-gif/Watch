@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Watch Video</title>
+  <title>Video Player</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -71,10 +70,22 @@
       text-align: center;
     }
 
+    #debug-info {
+      margin-top: 16px;
+      color: #888;
+      font-size: 12px;
+      font-family: monospace;
+      background: #111;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
     #video-container {
       display: none;
       margin-top: 20px;
-      position: relative;
     }
 
     .video-wrapper {
@@ -91,44 +102,6 @@
       background: #000;
     }
 
-    .fullscreen-btn {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      background: rgba(0, 0, 0, 0.7);
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-    }
-
-    .fullscreen-btn svg {
-      width: 24px;
-      height: 24px;
-      fill: white;
-    }
-
-    .video-wrapper.fullscreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 9999;
-      border-radius: 0;
-    }
-
-    .video-wrapper.fullscreen video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
     .video-info {
       margin-top: 12px;
       text-align: center;
@@ -139,9 +112,9 @@
       display: inline-block;
       width: 16px;
       height: 16px;
-      border: 2px solid rgba(0,0,0,0.3);
+      border: 2px solid rgba(255,255,255,0.3);
       border-radius: 50%;
-      border-top-color: #000;
+      border-top-color: #fff;
       animation: spin 0.6s linear infinite;
       margin-right: 8px;
       vertical-align: middle;
@@ -154,145 +127,127 @@
 </head>
 <body>
   <div class="container">
-    <h1 id="video-title">Loading...</h1>
-    <p id="subtitle">Preparing video...</p>
+    <h1 id="video-title">Video Player</h1>
+    <p id="subtitle">Loading...</p>
     
-    <button id="watch-btn" class="btn" onclick="handleWatchClick()">
-      Watch Video 🎬
+    <button id="watch-btn" class="btn" onclick="loadVideo()">
+      Load Video
     </button>
     
     <div id="error-msg"></div>
+    <div id="debug-info"></div>
     
     <div id="video-container">
-      <div class="video-wrapper" id="video-wrapper">
+      <div class="video-wrapper">
         <video id="video-player" controls playsinline webkit-playsinline></video>
-        
-        <button class="fullscreen-btn" id="fullscreen-btn" onclick="toggleFullscreen()">
-          <svg id="fullscreen-icon" viewBox="0 0 24 24">
-            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-          </svg>
-        </button>
       </div>
       <div class="video-info" id="video-info"></div>
     </div>
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.expand();
+      tg.ready();
+    }
 
-    let videoTitle = null;
-    let blockId = null;
     let videoId = null;
-    let isFullscreen = false;
-
-    // API Base URL - will be your Vercel URL
     const API_URL = window.location.origin + '/api';
+
+    // Debug logger
+    function debug(msg) {
+      const debugDiv = document.getElementById('debug-info');
+      debugDiv.textContent += msg + '
+';
+      console.log(msg);
+    }
 
     function showError(msg) {
       document.getElementById('error-msg').textContent = msg;
     }
 
     function getVideoId() {
-      const startParam = tg.initDataUnsafe?.start_param || '';
-      if (!startParam) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('video_id') || 'video1';
+      // Try Telegram first
+      if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+        return tg.initDataUnsafe.start_param;
       }
-      return startParam;
+      
+      // Fallback to URL query string for browser testing
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get('video_id');
+      
+      if (id) {
+        return id;
+      }
+      
+      // Default test video
+      return 'vid_1';
     }
 
     async function init() {
       videoId = getVideoId();
+      debug('Video ID: ' + videoId);
+      debug('API URL: ' + API_URL);
       
-      if (!videoId) {
-        showError('No video specified');
-        document.getElementById('watch-btn').disabled = true;
-        return;
-      }
-
-      try {
-        document.getElementById('subtitle').textContent = 'Loading...';
-        
-        const response = await fetch(`${API_URL}/init?video_id=${encodeURIComponent(videoId)}`);
-        const data = await response.json();
-
-        if (!data.success) {
-          showError(data.error || 'Failed to load video');
-          document.getElementById('watch-btn').disabled = true;
-          return;
-        }
-
-        videoTitle = data.video.title;
-        blockId = data.blockId;
-
-        document.getElementById('video-title').textContent = videoTitle || 'Watch Video';
-        document.getElementById('subtitle').textContent = 'Click the button to watch';
-
-      } catch (error) {
-        showError('Connection error: ' + error.message);
-        document.getElementById('watch-btn').disabled = true;
-        console.error(error);
-      }
+      document.getElementById('subtitle').textContent = 'Click to load video';
     }
 
-    async function handleWatchClick() {
-      if (!blockId) {
-        showError('Not ready. Please wait...');
-        return;
-      }
-
+    async function loadVideo() {
       const btn = document.getElementById('watch-btn');
       btn.disabled = true;
-      btn.innerHTML = '<span class="loading"></span>Loading Ad...';
+      btn.innerHTML = '<span class="loading"></span>Loading...';
+      
+      showError('');
+      debug('Starting video load...');
 
       try {
-        if (window.Adsgram) {
-          const AdController = window.Adsgram.init({ blockId: blockId });
-          
-          await AdController.show();
-          
-          btn.innerHTML = '<span class="loading"></span>Loading Video...';
-          await fetchAndDisplayVideo();
-
-        } else {
-          throw new Error('Adsgram not loaded');
-        }
-
-      } catch (error) {
-        console.error('Ad error:', error);
+        // Step 1: Get video info
+        debug('Fetching video info...');
+        const initUrl = `${API_URL}/init?video_id=${encodeURIComponent(videoId)}`;
+        debug('Init URL: ' + initUrl);
         
-        if (error?.code === 'user_closed') {
-          showError('Please watch the full ad');
-          btn.disabled = false;
-          btn.textContent = 'Watch Video 🎬';
-        } else {
-          showError('Ad failed. Loading video...');
-          await fetchAndDisplayVideo();
-        }
-      }
-    }
-
-    async function fetchAndDisplayVideo() {
-      try {
-        const response = await fetch(`${API_URL}/get-video?video_id=${encodeURIComponent(videoId)}`);
-        const data = await response.json();
-
-        if (!data.success) {
-          showError(data.error || 'Failed to load video');
-          return;
+        const initResponse = await fetch(initUrl);
+        const initData = await initResponse.json();
+        
+        debug('Init response: ' + JSON.stringify(initData));
+        
+        if (!initData.success) {
+          throw new Error(initData.error || 'Failed to get video info');
         }
 
-        displayVideo(data.video);
+        document.getElementById('video-title').textContent = initData.video.title || 'Video';
+        
+        // Step 2: Get video URL
+        debug('Fetching video URL...');
+        const videoUrl = `${API_URL}/get-video?video_id=${encodeURIComponent(videoId)}`;
+        debug('Get-video URL: ' + videoUrl);
+        
+        const videoResponse = await fetch(videoUrl);
+        const videoData = await videoResponse.json();
+        
+        debug('Video response: ' + JSON.stringify(videoData));
+
+        if (!videoData.success) {
+          throw new Error(videoData.error || 'Failed to get video URL');
+        }
+
+        debug('Video URL: ' + videoData.video.video_url);
+        
+        // Step 3: Display video
+        displayVideo(videoData.video);
 
       } catch (error) {
-        showError('Failed to load video: ' + error.message);
-        console.error(error);
+        showError('Error: ' + error.message);
+        debug('ERROR: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'Retry';
       }
     }
 
     function displayVideo(videoData) {
+      debug('Displaying video...');
+      
       document.getElementById('error-msg').textContent = '';
       document.getElementById('watch-btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
@@ -306,33 +261,22 @@
       
       container.style.display = 'block';
       
+      debug('Video source set: ' + videoData.video_url);
+      
       player.load();
       
       player.addEventListener('loadeddata', () => {
-        player.play().catch(err => console.log('Autoplay prevented:', err));
+        debug('Video loaded successfully');
+        player.play().catch(err => {
+          debug('Autoplay prevented: ' + err.message);
+        });
       });
 
       player.addEventListener('error', (e) => {
-        console.error('Video error:', player.error);
-        showError('Video playback error. Please try again.');
+        const error = player.error;
+        debug('Video error: ' + error.code + ' - ' + error.message);
+        showError('Video playback error. Error code: ' + error.code);
       });
-    }
-
-    function toggleFullscreen() {
-      const wrapper = document.getElementById('video-wrapper');
-      const player = document.getElementById('video-player');
-      const icon = document.getElementById('fullscreen-icon');
-      
-      if (!isFullscreen) {
-        wrapper.classList.add('fullscreen');
-        isFullscreen = true;
-        icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-        player.play();
-      } else {
-        wrapper.classList.remove('fullscreen');
-        isFullscreen = false;
-        icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-      }
     }
 
     init();
