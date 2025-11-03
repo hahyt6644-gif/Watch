@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Watch Video</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
@@ -17,87 +17,108 @@
       box-sizing: border-box;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #000;
       color: #fff;
-      min-height: 100vh;
-      padding: 12px;
+      padding: 10px;
     }
 
     .container {
       background: #1a1a1a;
-      padding: 20px;
-      border-radius: 16px;
-      max-width: 500px;
+      padding: 18px;
+      border-radius: 14px;
+      max-width: 480px;
       margin: 0 auto;
     }
 
     h1 {
-      font-size: 20px;
-      margin-bottom: 8px;
+      font-size: 19px;
+      margin-bottom: 6px;
       text-align: center;
     }
 
     #subtitle {
-      color: #888;
-      margin-bottom: 16px;
-      font-size: 14px;
+      color: #999;
+      margin-bottom: 14px;
+      font-size: 13px;
       text-align: center;
     }
 
     /* ========== TOP BANNER AD (Above Button) ========== */
-    .ad-banner-top {
-      margin-bottom: 16px;
+    .ad-top {
+      margin-bottom: 14px;
       text-align: center;
       min-height: 50px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     /* ================================================== */
 
     .btn {
-      background: #32b8c6;
+      background: linear-gradient(135deg, #32b8c6, #28a0ac);
       border: none;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 13px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
       color: #000;
       font-weight: 700;
       width: 100%;
       transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(50, 184, 198, 0.3);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
     }
 
     .btn:disabled {
       background: #555;
       cursor: not-allowed;
       opacity: 0.6;
+      box-shadow: none;
     }
 
     /* ========== BOTTOM BANNER AD (Below Button) ========== */
-    .ad-banner-bottom {
-      margin-top: 16px;
+    .ad-bottom {
+      margin-top: 14px;
       text-align: center;
       min-height: 50px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     /* ==================================================== */
 
     #error-msg {
-      margin-top: 16px;
+      margin-top: 12px;
       color: #ff4444;
-      font-size: 14px;
+      font-size: 13px;
       text-align: center;
     }
 
     #video-container {
       display: none;
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     .video-wrapper {
       position: relative;
       width: 100%;
       background: #000;
-      border-radius: 12px;
+      border-radius: 10px;
       overflow: hidden;
     }
 
@@ -107,72 +128,87 @@
       background: #000;
     }
 
-    .fullscreen-btn {
+    .fs-btn {
       position: absolute;
-      bottom: 60px;
-      right: 16px;
-      background: rgba(0, 0, 0, 0.8);
+      bottom: 56px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
       border: none;
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+      z-index: 100;
+      transition: all 0.2s;
     }
 
-    .fullscreen-btn svg {
-      width: 26px;
-      height: 26px;
+    .fs-btn:active {
+      transform: scale(0.95);
+    }
+
+    .fs-btn svg {
+      width: 24px;
+      height: 24px;
       fill: white;
     }
 
-    /* ========== FULLSCREEN STYLES ========== */
-    body.fullscreen-active {
-      overflow: hidden;
-    }
-
-    .video-wrapper.fullscreen {
+    /* ========== FULLSCREEN MODE ========== */
+    .video-wrapper.fs-active {
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 9999 !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      z-index: 999999 !important;
       border-radius: 0 !important;
       background: #000 !important;
     }
 
-    .video-wrapper.fullscreen video {
-      width: 100vw;
-      height: 100vh;
+    .video-wrapper.fs-active video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw !important;
+      height: 100vh !important;
       object-fit: contain;
     }
 
-    .video-wrapper.fullscreen .fullscreen-btn {
-      bottom: 20px;
-      right: 20px;
+    .video-wrapper.fs-active .fs-btn {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 1000000;
     }
-    /* ======================================= */
+
+    body.no-scroll {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+    /* ====================================== */
 
     .video-info {
-      margin-top: 12px;
+      margin-top: 10px;
       text-align: center;
-      font-size: 15px;
-      color: #ccc;
+      font-size: 14px;
+      color: #aaa;
     }
 
     .loading {
       display: inline-block;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       border: 2px solid rgba(0,0,0,0.3);
       border-radius: 50%;
       border-top-color: #000;
-      animation: spin 0.6s linear infinite;
-      margin-right: 8px;
+      animation: spin 0.5s linear infinite;
+      margin-right: 6px;
       vertical-align: middle;
     }
 
@@ -187,39 +223,25 @@
     <p id="subtitle">Preparing video...</p>
     
     <!-- ========== TOP BANNER AD (Above Button) ========== -->
-    <div class="ad-banner-top">
-      <script async="async" data-cfasync="false" src="//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js"></script>
-      <div id="container-257f53d4a564585de9b5b359319941c3"></div>
-    </div>
+    <div class="ad-top" id="ad-top"></div>
     <!-- ================================================== -->
     
-    <button id="watch-btn" class="btn" onclick="handleWatchClick()">
+    <button id="watch-btn" class="btn" onclick="startWatch()">
       Watch Video 🎬
     </button>
     
     <!-- ========== BOTTOM BANNER AD (Below Button) ========== -->
-    <div class="ad-banner-bottom">
-      <script type="text/javascript">
-        atOptions = {
-          'key' : '3fc8a11a10d75d1b796ff86d8cc395c9',
-          'format' : 'iframe',
-          'height' : 50,
-          'width' : 320,
-          'params' : {}
-        };
-      </script>
-      <script type="text/javascript" src="//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js"></script>
-    </div>
-    <!-- ===================================================== -->
+    <div class="ad-bottom" id="ad-bottom"></div>
+    <!-- ==================================================== -->
     
     <div id="error-msg"></div>
     
     <div id="video-container">
-      <div class="video-wrapper" id="video-wrapper">
-        <video id="video-player" controls playsinline webkit-playsinline></video>
+      <div class="video-wrapper" id="vw">
+        <video id="vp" controls playsinline webkit-playsinline preload="metadata"></video>
         
-        <button class="fullscreen-btn" id="fullscreen-btn" onclick="toggleFullscreen()">
-          <svg id="fullscreen-icon" viewBox="0 0 24 24">
+        <button class="fs-btn" id="fs-btn" onclick="toggleFS()">
+          <svg id="fs-icon" viewBox="0 0 24 24">
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
           </svg>
         </button>
@@ -233,60 +255,83 @@
     tg.expand();
     tg.ready();
 
-    let videoTitle = null;
-    let videoId = null;
-    let isFullscreen = false;
-    let isLandscapeVideo = false;
+    let vTitle = null;
+    let vId = null;
+    let isFS = false;
+    let isLandscape = false;
+    const API = window.location.origin + '/api';
 
-    const API_URL = window.location.origin + '/api';
-
-    function showError(msg) {
+    function err(msg) {
       document.getElementById('error-msg').textContent = msg;
     }
 
-    function getVideoId() {
-      const startParam = tg.initDataUnsafe?.start_param || '';
-      if (!startParam) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('video_id') || 'vid_1';
-      }
-      return startParam;
+    function getVID() {
+      const sp = tg.initDataUnsafe?.start_param || '';
+      if (sp) return sp;
+      const params = new URLSearchParams(window.location.search);
+      return params.get('video_id') || 'vid_1';
+    }
+
+    // Load ads immediately
+    function loadAds() {
+      // TOP AD
+      const topScript = document.createElement('script');
+      topScript.async = true;
+      topScript.setAttribute('data-cfasync', 'false');
+      topScript.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
+      document.head.appendChild(topScript);
+
+      const topDiv = document.createElement('div');
+      topDiv.id = 'container-257f53d4a564585de9b5b359319941c3';
+      document.getElementById('ad-top').appendChild(topDiv);
+
+      // BOTTOM AD
+      window.atOptions = {
+        'key': '3fc8a11a10d75d1b796ff86d8cc395c9',
+        'format': 'iframe',
+        'height': 50,
+        'width': 320,
+        'params': {}
+      };
+      const botScript = document.createElement('script');
+      botScript.type = 'text/javascript';
+      botScript.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
+      document.getElementById('ad-bottom').appendChild(botScript);
     }
 
     async function init() {
-      videoId = getVideoId();
+      vId = getVID();
       
-      if (!videoId) {
-        showError('No video specified');
+      if (!vId) {
+        err('No video ID');
         document.getElementById('watch-btn').disabled = true;
         return;
       }
 
       try {
-        document.getElementById('subtitle').textContent = 'Loading...';
-        
-        const response = await fetch(`${API_URL}/init?video_id=${encodeURIComponent(videoId)}`);
-        const data = await response.json();
+        const res = await fetch(`${API}/init?video_id=${encodeURIComponent(vId)}`);
+        const data = await res.json();
 
         if (!data.success) {
-          showError(data.error || 'Failed to load video');
+          err(data.error || 'Failed to load');
           document.getElementById('watch-btn').disabled = true;
           return;
         }
 
-        videoTitle = data.video.title;
+        vTitle = data.video.title;
+        document.getElementById('video-title').textContent = vTitle || 'Watch Video';
+        document.getElementById('subtitle').textContent = 'Click button to watch';
 
-        document.getElementById('video-title').textContent = videoTitle || 'Watch Video';
-        document.getElementById('subtitle').textContent = 'Click the button to watch';
+        // Load ads after init
+        loadAds();
 
-      } catch (error) {
-        showError('Connection error: ' + error.message);
+      } catch (e) {
+        err('Connection error: ' + e.message);
         document.getElementById('watch-btn').disabled = true;
-        console.error(error);
       }
     }
 
-    async function handleWatchClick() {
+    async function startWatch() {
       const btn = document.getElementById('watch-btn');
       btn.disabled = true;
       btn.innerHTML = '<span class="loading"></span>Loading Ad...';
@@ -295,187 +340,135 @@
         // ========== MONETAG REWARDED AD ========== 
         if (window.show_9981288) {
           await show_9981288();
-          console.log('User watched the ad!');
         }
         // =========================================
         
         btn.innerHTML = '<span class="loading"></span>Loading Video...';
-        await fetchAndDisplayVideo();
+        await loadVideo();
 
-      } catch (error) {
-        console.error('Ad error:', error);
+      } catch (e) {
         btn.innerHTML = '<span class="loading"></span>Loading Video...';
-        await fetchAndDisplayVideo();
+        await loadVideo();
       }
     }
 
-    async function fetchAndDisplayVideo() {
+    async function loadVideo() {
       try {
-        const response = await fetch(`${API_URL}/get-video?video_id=${encodeURIComponent(videoId)}`);
-        const data = await response.json();
+        const res = await fetch(`${API}/get-video?video_id=${encodeURIComponent(vId)}`);
+        const data = await res.json();
 
         if (!data.success) {
-          showError(data.error || 'Failed to load video');
+          err(data.error || 'Failed to load video');
           document.getElementById('watch-btn').disabled = false;
           document.getElementById('watch-btn').textContent = 'Retry';
           return;
         }
 
-        displayVideo(data.video);
+        showVideo(data.video);
 
-      } catch (error) {
-        showError('Failed to load video: ' + error.message);
+      } catch (e) {
+        err('Failed: ' + e.message);
         document.getElementById('watch-btn').disabled = false;
         document.getElementById('watch-btn').textContent = 'Retry';
-        console.error(error);
       }
     }
 
-    function displayVideo(videoData) {
-      document.getElementById('error-msg').textContent = '';
+    function showVideo(vid) {
+      err('');
       document.getElementById('watch-btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
-      document.querySelector('.ad-banner-bottom').style.display = 'none';
+      document.getElementById('ad-bottom').style.display = 'none';
       
-      const container = document.getElementById('video-container');
-      const player = document.getElementById('video-player');
+      const vp = document.getElementById('vp');
       const info = document.getElementById('video-info');
       
-      player.src = videoData.video_url;
-      info.textContent = videoData.title || '';
+      vp.src = vid.video_url;
+      info.textContent = vid.title || '';
       
-      container.style.display = 'block';
+      document.getElementById('video-container').style.display = 'block';
       
-      player.load();
+      vp.load();
       
-      // Detect if video is landscape
-      player.addEventListener('loadedmetadata', () => {
-        isLandscapeVideo = player.videoWidth > player.videoHeight;
-        console.log(`Video: ${player.videoWidth}x${player.videoHeight}, Landscape: ${isLandscapeVideo}`);
+      vp.addEventListener('loadedmetadata', () => {
+        isLandscape = vp.videoWidth > vp.videoHeight;
+        console.log(`Video: ${vp.videoWidth}x${vp.videoHeight}, Landscape: ${isLandscape}`);
       });
 
-      player.play().catch(err => {
-        console.log('Autoplay prevented:', err);
-      });
+      vp.play().catch(() => {});
 
-      player.addEventListener('error', (e) => {
-        showError('Video playback error. Please try again.');
-        console.error('Video error:', player.error);
+      vp.addEventListener('error', () => {
+        err('Playback error');
       });
     }
 
-    function toggleFullscreen() {
-      const wrapper = document.getElementById('video-wrapper');
-      const player = document.getElementById('video-player');
-      const icon = document.getElementById('fullscreen-icon');
+    function toggleFS() {
+      const vw = document.getElementById('vw');
+      const icon = document.getElementById('fs-icon');
       
-      if (!isFullscreen) {
+      if (!isFS) {
         // Enter fullscreen
-        wrapper.classList.add('fullscreen');
-        document.body.classList.add('fullscreen-active');
+        vw.classList.add('fs-active');
+        document.body.classList.add('no-scroll');
         
-        // Lock orientation to landscape for landscape videos
-        if (isLandscapeVideo) {
-          lockOrientation('landscape');
+        // Lock to landscape if video is landscape
+        if (isLandscape) {
+          lockLandscape();
         }
         
-        // Try native fullscreen API
-        const fullscreenElement = wrapper;
-        if (fullscreenElement.requestFullscreen) {
-          fullscreenElement.requestFullscreen();
-        } else if (fullscreenElement.webkitRequestFullscreen) {
-          fullscreenElement.webkitRequestFullscreen();
-        } else if (fullscreenElement.mozRequestFullScreen) {
-          fullscreenElement.mozRequestFullScreen();
-        } else if (fullscreenElement.msRequestFullscreen) {
-          fullscreenElement.msRequestFullscreen();
-        }
+        // Native fullscreen
+        if (vw.requestFullscreen) vw.requestFullscreen();
+        else if (vw.webkitRequestFullscreen) vw.webkitRequestFullscreen();
+        else if (vw.mozRequestFullScreen) vw.mozRequestFullScreen();
         
-        // Change icon to exit fullscreen
+        // Exit icon
         icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
         
-        isFullscreen = true;
+        isFS = true;
       } else {
-        // Exit fullscreen
-        exitFullscreen();
+        exitFS();
       }
     }
 
-    function exitFullscreen() {
-      const wrapper = document.getElementById('video-wrapper');
-      const icon = document.getElementById('fullscreen-icon');
+    function exitFS() {
+      const vw = document.getElementById('vw');
+      const icon = document.getElementById('fs-icon');
       
-      wrapper.classList.remove('fullscreen');
-      document.body.classList.remove('fullscreen-active');
+      vw.classList.remove('fs-active');
+      document.body.classList.remove('no-scroll');
       
-      // Unlock orientation
       unlockOrientation();
       
-      // Exit native fullscreen
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
       
-      // Change icon back to enter fullscreen
       icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
       
-      isFullscreen = false;
+      isFS = false;
     }
 
-    function lockOrientation(orientation) {
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock(orientation).catch(err => {
-            console.log('Orientation lock failed:', err);
-          });
-        } else if (window.screen.lockOrientation) {
-          window.screen.lockOrientation(orientation);
-        } else if (window.screen.mozLockOrientation) {
-          window.screen.mozLockOrientation(orientation);
-        } else if (window.screen.msLockOrientation) {
-          window.screen.msLockOrientation(orientation);
-        }
-      } catch (err) {
-        console.log('Orientation lock not supported:', err);
+    function lockLandscape() {
+      const orient = screen.orientation || screen.mozOrientation || screen.msOrientation;
+      if (orient && orient.lock) {
+        orient.lock('landscape').catch(() => {});
       }
     }
 
     function unlockOrientation() {
-      try {
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
-        } else if (window.screen.unlockOrientation) {
-          window.screen.unlockOrientation();
-        } else if (window.screen.mozUnlockOrientation) {
-          window.screen.mozUnlockOrientation();
-        } else if (window.screen.msUnlockOrientation) {
-          window.screen.msUnlockOrientation();
-        }
-      } catch (err) {
-        console.log('Orientation unlock not supported:', err);
+      const orient = screen.orientation || screen.mozOrientation || screen.msOrientation;
+      if (orient && orient.unlock) {
+        orient.unlock();
       }
     }
 
-    // Handle native fullscreen changes (ESC key, back button, etc.)
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    // Handle ESC and back button
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) exitFS();
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      if (!document.webkitFullscreenElement) exitFS();
+    });
 
-    function handleFullscreenChange() {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-          !document.mozFullScreenElement && !document.msFullscreenElement) {
-        exitFullscreen();
-      }
-    }
-
-    // Start initialization
     init();
   </script>
 </body>
