@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Watch Video</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  
+  <!-- ========== MONETAG REWARDED AD SDK ========== -->
+  <script src='//libtl.com/sdk.js' data-zone='9981288' data-sdk='show_9981288'></script>
+  <!-- ============================================== -->
+  
   <style>
     * {
       margin: 0;
@@ -45,6 +49,13 @@
       text-align: center;
     }
 
+    /* ========== TOP BANNER AD CONTAINER ========== */
+    .ad-banner-top {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    /* ============================================== */
+
     .btn {
       background: #32b8c6;
       border: none;
@@ -74,7 +85,6 @@
     #video-container {
       display: none;
       margin-top: 20px;
-      position: relative;
     }
 
     .video-wrapper {
@@ -113,14 +123,15 @@
       fill: white;
     }
 
+    /* ========== FULLSCREEN STYLES ========== */
     .video-wrapper.fullscreen {
-      position: fixed;
-      top: 0;
-      left: 0;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      z-index: 9999;
-      border-radius: 0;
+      z-index: 9999 !important;
+      border-radius: 0 !important;
     }
 
     .video-wrapper.fullscreen video {
@@ -128,12 +139,20 @@
       height: 100%;
       object-fit: contain;
     }
+    /* ======================================= */
 
     .video-info {
       margin-top: 12px;
       text-align: center;
       font-size: 16px;
     }
+
+    /* ========== BOTTOM BANNER AD CONTAINER ========== */
+    .ad-banner-bottom {
+      margin-top: 20px;
+      text-align: center;
+    }
+    /* ================================================ */
 
     .loading {
       display: inline-block;
@@ -157,6 +176,13 @@
     <h1 id="video-title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
     
+    <!-- ========== TOP BANNER AD ========== -->
+    <div class="ad-banner-top">
+      <script async="async" data-cfasync="false" src="//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js"></script>
+      <div id="container-257f53d4a564585de9b5b359319941c3"></div>
+    </div>
+    <!-- =================================== -->
+    
     <button id="watch-btn" class="btn" onclick="handleWatchClick()">
       Watch Video 🎬
     </button>
@@ -174,6 +200,21 @@
         </button>
       </div>
       <div class="video-info" id="video-info"></div>
+      
+      <!-- ========== BOTTOM BANNER AD ========== -->
+      <div class="ad-banner-bottom">
+        <script type="text/javascript">
+          atOptions = {
+            'key' : '3fc8a11a10d75d1b796ff86d8cc395c9',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js"></script>
+      </div>
+      <!-- ====================================== -->
     </div>
   </div>
 
@@ -187,7 +228,6 @@
     let videoId = null;
     let isFullscreen = false;
 
-    // API Base URL - will be your Vercel URL
     const API_URL = window.location.origin + '/api';
 
     function showError(msg) {
@@ -198,7 +238,7 @@
       const startParam = tg.initDataUnsafe?.start_param || '';
       if (!startParam) {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('video_id') || 'video1';
+        return urlParams.get('video_id') || 'vid_1';
       }
       return startParam;
     }
@@ -225,7 +265,6 @@
         }
 
         videoTitle = data.video.title;
-        blockId = data.blockId;
 
         document.getElementById('video-title').textContent = videoTitle || 'Watch Video';
         document.getElementById('subtitle').textContent = 'Click the button to watch';
@@ -238,39 +277,26 @@
     }
 
     async function handleWatchClick() {
-      if (!blockId) {
-        showError('Not ready. Please wait...');
-        return;
-      }
-
       const btn = document.getElementById('watch-btn');
       btn.disabled = true;
       btn.innerHTML = '<span class="loading"></span>Loading Ad...';
 
       try {
-        if (window.Adsgram) {
-          const AdController = window.Adsgram.init({ blockId: blockId });
-          
-          await AdController.show();
-          
-          btn.innerHTML = '<span class="loading"></span>Loading Video...';
-          await fetchAndDisplayVideo();
-
-        } else {
-          throw new Error('Adsgram not loaded');
+        // ========== MONETAG REWARDED AD ========== 
+        // Show rewarded interstitial ad before video
+        if (window.show_9981288) {
+          await show_9981288();
+          console.log('User watched the ad!');
         }
+        // =========================================
+        
+        btn.innerHTML = '<span class="loading"></span>Loading Video...';
+        await fetchAndDisplayVideo();
 
       } catch (error) {
         console.error('Ad error:', error);
-        
-        if (error?.code === 'user_closed') {
-          showError('Please watch the full ad');
-          btn.disabled = false;
-          btn.textContent = 'Watch Video 🎬';
-        } else {
-          showError('Ad failed. Loading video...');
-          await fetchAndDisplayVideo();
-        }
+        showError('Ad skipped or failed. Loading video...');
+        await fetchAndDisplayVideo();
       }
     }
 
@@ -307,14 +333,14 @@
       container.style.display = 'block';
       
       player.load();
-      
-      player.addEventListener('loadeddata', () => {
-        player.play().catch(err => console.log('Autoplay prevented:', err));
+      player.play().catch(err => {
+        console.log('Autoplay prevented:', err);
       });
 
       player.addEventListener('error', (e) => {
-        console.error('Video error:', player.error);
+        const error = player.error;
         showError('Video playback error. Please try again.');
+        console.error('Video error:', error);
       });
     }
 
@@ -324,14 +350,62 @@
       const icon = document.getElementById('fullscreen-icon');
       
       if (!isFullscreen) {
+        // Enter fullscreen
         wrapper.classList.add('fullscreen');
-        isFullscreen = true;
+        
+        // Try native fullscreen API
+        if (wrapper.requestFullscreen) {
+          wrapper.requestFullscreen();
+        } else if (wrapper.webkitRequestFullscreen) {
+          wrapper.webkitRequestFullscreen();
+        } else if (wrapper.mozRequestFullScreen) {
+          wrapper.mozRequestFullScreen();
+        } else if (wrapper.msRequestFullscreen) {
+          wrapper.msRequestFullscreen();
+        }
+        
+        // Change icon to exit fullscreen
         icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-        player.play();
+        
+        isFullscreen = true;
       } else {
+        // Exit fullscreen
         wrapper.classList.remove('fullscreen');
-        isFullscreen = false;
+        
+        // Exit native fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+        
+        // Change icon back to enter fullscreen
         icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+        
+        isFullscreen = false;
+      }
+    }
+
+    // Handle native fullscreen changes (ESC key, etc.)
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      const wrapper = document.getElementById('video-wrapper');
+      const icon = document.getElementById('fullscreen-icon');
+      
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+          !document.mozFullScreenElement && !document.msFullscreenElement) {
+        // Exited fullscreen
+        wrapper.classList.remove('fullscreen');
+        icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+        isFullscreen = false;
       }
     }
 
