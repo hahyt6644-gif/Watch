@@ -22,41 +22,37 @@
       background: #000;
       color: #fff;
       min-height: 100vh;
-      padding: 8px;
-      overflow-x: hidden;
+      padding: 12px;
     }
 
     .container {
       background: #1a1a1a;
       padding: 20px;
       border-radius: 16px;
-      max-width: 600px;
+      max-width: 500px;
       margin: 0 auto;
     }
 
     h1 {
       font-size: 20px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       text-align: center;
     }
 
     #subtitle {
       color: #888;
       margin-bottom: 16px;
-      font-size: 13px;
+      font-size: 14px;
       text-align: center;
     }
 
-    /* ========== TOP BANNER AD CONTAINER ========== */
+    /* ========== TOP BANNER AD (Above Button) ========== */
     .ad-banner-top {
       margin-bottom: 16px;
       text-align: center;
       min-height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
-    /* ============================================== */
+    /* ================================================== */
 
     .btn {
       background: #32b8c6;
@@ -69,7 +65,6 @@
       font-weight: 700;
       width: 100%;
       transition: all 0.2s;
-      margin-bottom: 12px;
     }
 
     .btn:disabled {
@@ -78,16 +73,24 @@
       opacity: 0.6;
     }
 
+    /* ========== BOTTOM BANNER AD (Below Button) ========== */
+    .ad-banner-bottom {
+      margin-top: 16px;
+      text-align: center;
+      min-height: 50px;
+    }
+    /* ==================================================== */
+
     #error-msg {
-      margin-top: 12px;
+      margin-top: 16px;
       color: #ff4444;
-      font-size: 13px;
+      font-size: 14px;
       text-align: center;
     }
 
     #video-container {
       display: none;
-      margin-top: 16px;
+      margin-top: 20px;
     }
 
     .video-wrapper {
@@ -108,10 +111,10 @@
       position: absolute;
       bottom: 60px;
       right: 16px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.8);
       border: none;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 8px;
       cursor: pointer;
       display: flex;
@@ -121,12 +124,16 @@
     }
 
     .fullscreen-btn svg {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       fill: white;
     }
 
     /* ========== FULLSCREEN STYLES ========== */
+    body.fullscreen-active {
+      overflow: hidden;
+    }
+
     .video-wrapper.fullscreen {
       position: fixed !important;
       top: 0 !important;
@@ -135,36 +142,27 @@
       height: 100vh !important;
       z-index: 9999 !important;
       border-radius: 0 !important;
+      background: #000 !important;
     }
 
     .video-wrapper.fullscreen video {
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       object-fit: contain;
     }
 
     .video-wrapper.fullscreen .fullscreen-btn {
-      bottom: 16px;
+      bottom: 20px;
+      right: 20px;
     }
     /* ======================================= */
 
     .video-info {
-      margin-top: 10px;
+      margin-top: 12px;
       text-align: center;
       font-size: 15px;
       color: #ccc;
     }
-
-    /* ========== BOTTOM BANNER AD CONTAINER ========== */
-    .ad-banner-bottom {
-      margin-top: 16px;
-      text-align: center;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /* ================================================ */
 
     .loading {
       display: inline-block;
@@ -188,15 +186,31 @@
     <h1 id="video-title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
     
-    <!-- ========== TOP BANNER AD ========== -->
-    <div class="ad-banner-top" id="top-banner">
-      <!-- Ad will be injected here dynamically -->
+    <!-- ========== TOP BANNER AD (Above Button) ========== -->
+    <div class="ad-banner-top">
+      <script async="async" data-cfasync="false" src="//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js"></script>
+      <div id="container-257f53d4a564585de9b5b359319941c3"></div>
     </div>
-    <!-- =================================== -->
+    <!-- ================================================== -->
     
     <button id="watch-btn" class="btn" onclick="handleWatchClick()">
       Watch Video 🎬
     </button>
+    
+    <!-- ========== BOTTOM BANNER AD (Below Button) ========== -->
+    <div class="ad-banner-bottom">
+      <script type="text/javascript">
+        atOptions = {
+          'key' : '3fc8a11a10d75d1b796ff86d8cc395c9',
+          'format' : 'iframe',
+          'height' : 50,
+          'width' : 320,
+          'params' : {}
+        };
+      </script>
+      <script type="text/javascript" src="//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js"></script>
+    </div>
+    <!-- ===================================================== -->
     
     <div id="error-msg"></div>
     
@@ -211,29 +225,8 @@
         </button>
       </div>
       <div class="video-info" id="video-info"></div>
-      
-      <!-- ========== BOTTOM BANNER AD ========== -->
-      <div class="ad-banner-bottom" id="bottom-banner">
-        <!-- Ad will be injected here dynamically -->
-      </div>
-      <!-- ====================================== -->
     </div>
   </div>
-
-  <!-- ========== AD SCRIPTS (Loaded once at end) ========== -->
-  <script async="async" data-cfasync="false" src="//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js"></script>
-  
-  <script type="text/javascript">
-    atOptions = {
-      'key' : '3fc8a11a10d75d1b796ff86d8cc395c9',
-      'format' : 'iframe',
-      'height' : 50,
-      'width' : 320,
-      'params' : {}
-    };
-  </script>
-  <script type="text/javascript" src="//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js"></script>
-  <!-- ==================================================== -->
 
   <script>
     const tg = window.Telegram.WebApp;
@@ -286,26 +279,11 @@
         document.getElementById('video-title').textContent = videoTitle || 'Watch Video';
         document.getElementById('subtitle').textContent = 'Click the button to watch';
 
-        // Inject ads after DOM is ready
-        setTimeout(injectAds, 1000);
-
       } catch (error) {
         showError('Connection error: ' + error.message);
         document.getElementById('watch-btn').disabled = true;
         console.error(error);
       }
-    }
-
-    function injectAds() {
-      // Top banner ad
-      const topBanner = document.getElementById('top-banner');
-      if (topBanner && !topBanner.querySelector('div[id^="container-"]')) {
-        const topAdDiv = document.createElement('div');
-        topAdDiv.id = 'container-257f53d4a564585de9b5b359319941c3';
-        topBanner.appendChild(topAdDiv);
-      }
-
-      // Bottom banner ad will be injected when video container is shown
     }
 
     async function handleWatchClick() {
@@ -326,7 +304,7 @@
 
       } catch (error) {
         console.error('Ad error:', error);
-        showError('Loading video...');
+        btn.innerHTML = '<span class="loading"></span>Loading Video...';
         await fetchAndDisplayVideo();
       }
     }
@@ -338,6 +316,8 @@
 
         if (!data.success) {
           showError(data.error || 'Failed to load video');
+          document.getElementById('watch-btn').disabled = false;
+          document.getElementById('watch-btn').textContent = 'Retry';
           return;
         }
 
@@ -345,6 +325,8 @@
 
       } catch (error) {
         showError('Failed to load video: ' + error.message);
+        document.getElementById('watch-btn').disabled = false;
+        document.getElementById('watch-btn').textContent = 'Retry';
         console.error(error);
       }
     }
@@ -353,6 +335,7 @@
       document.getElementById('error-msg').textContent = '';
       document.getElementById('watch-btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
+      document.querySelector('.ad-banner-bottom').style.display = 'none';
       
       const container = document.getElementById('video-container');
       const player = document.getElementById('video-player');
@@ -368,8 +351,7 @@
       // Detect if video is landscape
       player.addEventListener('loadedmetadata', () => {
         isLandscapeVideo = player.videoWidth > player.videoHeight;
-        console.log('Video dimensions:', player.videoWidth, 'x', player.videoHeight);
-        console.log('Is landscape:', isLandscapeVideo);
+        console.log(`Video: ${player.videoWidth}x${player.videoHeight}, Landscape: ${isLandscapeVideo}`);
       });
 
       player.play().catch(err => {
@@ -380,14 +362,6 @@
         showError('Video playback error. Please try again.');
         console.error('Video error:', player.error);
       });
-
-      // Inject bottom banner after video shows
-      setTimeout(() => {
-        const bottomBanner = document.getElementById('bottom-banner');
-        if (bottomBanner && !bottomBanner.hasChildNodes()) {
-          // Bottom ad container is handled by atOptions script
-        }
-      }, 500);
     }
 
     function toggleFullscreen() {
@@ -398,23 +372,23 @@
       if (!isFullscreen) {
         // Enter fullscreen
         wrapper.classList.add('fullscreen');
+        document.body.classList.add('fullscreen-active');
         
-        // If video is landscape, try to rotate screen to landscape
-        if (isLandscapeVideo && screen.orientation) {
-          screen.orientation.lock('landscape').catch(err => {
-            console.log('Screen rotation not supported:', err);
-          });
+        // Lock orientation to landscape for landscape videos
+        if (isLandscapeVideo) {
+          lockOrientation('landscape');
         }
         
         // Try native fullscreen API
-        if (wrapper.requestFullscreen) {
-          wrapper.requestFullscreen();
-        } else if (wrapper.webkitRequestFullscreen) {
-          wrapper.webkitRequestFullscreen();
-        } else if (wrapper.mozRequestFullScreen) {
-          wrapper.mozRequestFullScreen();
-        } else if (wrapper.msRequestFullscreen) {
-          wrapper.msRequestFullscreen();
+        const fullscreenElement = wrapper;
+        if (fullscreenElement.requestFullscreen) {
+          fullscreenElement.requestFullscreen();
+        } else if (fullscreenElement.webkitRequestFullscreen) {
+          fullscreenElement.webkitRequestFullscreen();
+        } else if (fullscreenElement.mozRequestFullScreen) {
+          fullscreenElement.mozRequestFullScreen();
+        } else if (fullscreenElement.msRequestFullscreen) {
+          fullscreenElement.msRequestFullscreen();
         }
         
         // Change icon to exit fullscreen
@@ -423,105 +397,85 @@
         isFullscreen = true;
       } else {
         // Exit fullscreen
-        wrapper.classList.remove('fullscreen');
-        
-        // Unlock screen orientation
-        if (screen.orientation) {
-          screen.orientation.unlock();
-        }
-        
-        // Exit native fullscreen
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-          document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-        
-        // Change icon back to enter fullscreen
-        icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-        
-        isFullscreen = false;
+        exitFullscreen();
       }
     }
 
-    // Handle native fullscreen changes (ESC key, etc.)
+    function exitFullscreen() {
+      const wrapper = document.getElementById('video-wrapper');
+      const icon = document.getElementById('fullscreen-icon');
+      
+      wrapper.classList.remove('fullscreen');
+      document.body.classList.remove('fullscreen-active');
+      
+      // Unlock orientation
+      unlockOrientation();
+      
+      // Exit native fullscreen
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      
+      // Change icon back to enter fullscreen
+      icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+      
+      isFullscreen = false;
+    }
+
+    function lockOrientation(orientation) {
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock(orientation).catch(err => {
+            console.log('Orientation lock failed:', err);
+          });
+        } else if (window.screen.lockOrientation) {
+          window.screen.lockOrientation(orientation);
+        } else if (window.screen.mozLockOrientation) {
+          window.screen.mozLockOrientation(orientation);
+        } else if (window.screen.msLockOrientation) {
+          window.screen.msLockOrientation(orientation);
+        }
+      } catch (err) {
+        console.log('Orientation lock not supported:', err);
+      }
+    }
+
+    function unlockOrientation() {
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        } else if (window.screen.unlockOrientation) {
+          window.screen.unlockOrientation();
+        } else if (window.screen.mozUnlockOrientation) {
+          window.screen.mozUnlockOrientation();
+        } else if (window.screen.msUnlockOrientation) {
+          window.screen.msUnlockOrientation();
+        }
+      } catch (err) {
+        console.log('Orientation unlock not supported:', err);
+      }
+    }
+
+    // Handle native fullscreen changes (ESC key, back button, etc.)
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('mozfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
     function handleFullscreenChange() {
-      const wrapper = document.getElementById('video-wrapper');
-      const icon = document.getElementById('fullscreen-icon');
-      
       if (!document.fullscreenElement && !document.webkitFullscreenElement && 
           !document.mozFullScreenElement && !document.msFullscreenElement) {
-        // Exited fullscreen
-        wrapper.classList.remove('fullscreen');
-        
-        // Unlock orientation
-        if (screen.orientation) {
-          screen.orientation.unlock();
-        }
-        
-        icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-        isFullscreen = false;
+        exitFullscreen();
       }
     }
 
-    init();
-  </script>
-</body>
-</html>      
-        // Change icon to exit fullscreen
-        icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-        
-        isFullscreen = true;
-      } else {
-        // Exit fullscreen
-        wrapper.classList.remove('fullscreen');
-        
-        // Exit native fullscreen
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-          document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-        
-        // Change icon back to enter fullscreen
-        icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-        
-        isFullscreen = false;
-      }
-    }
-
-    // Handle native fullscreen changes (ESC key, etc.)
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-    function handleFullscreenChange() {
-      const wrapper = document.getElementById('video-wrapper');
-      const icon = document.getElementById('fullscreen-icon');
-      
-      if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-          !document.mozFullScreenElement && !document.msFullscreenElement) {
-        // Exited fullscreen
-        wrapper.classList.remove('fullscreen');
-        icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-        isFullscreen = false;
-      }
-    }
-
+    // Start initialization
     init();
   </script>
 </body>
