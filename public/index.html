@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Watch Video</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
@@ -21,43 +21,42 @@
       width: 100%;
       height: 100%;
       overflow-x: hidden;
+      background: #000;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #000;
       color: #fff;
-      padding: 10px;
+      padding: 8px;
     }
 
     .container {
       background: #1a1a1a;
-      padding: 18px;
-      border-radius: 14px;
-      max-width: 480px;
+      padding: 16px;
+      border-radius: 12px;
+      max-width: 500px;
       margin: 0 auto;
     }
 
     h1 {
-      font-size: 19px;
+      font-size: 18px;
       margin-bottom: 6px;
       text-align: center;
+      font-weight: 600;
     }
 
     #subtitle {
       color: #999;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       font-size: 13px;
       text-align: center;
     }
 
     /* ========== AD ABOVE BUTTON ========== */
-    .ad-above-btn {
-      margin-bottom: 14px;
+    .ad-above {
+      margin-bottom: 12px;
       text-align: center;
       min-height: 50px;
-      background: rgba(255,255,255,0.02);
-      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -67,15 +66,14 @@
     .btn {
       background: linear-gradient(135deg, #32b8c6, #28a0ac);
       border: none;
-      padding: 13px;
+      padding: 12px;
       border-radius: 10px;
       cursor: pointer;
       font-size: 15px;
       color: #000;
       font-weight: 700;
       width: 100%;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(50, 184, 198, 0.3);
+      transition: transform 0.1s;
     }
 
     .btn:active {
@@ -86,16 +84,13 @@
       background: #555;
       cursor: not-allowed;
       opacity: 0.6;
-      box-shadow: none;
     }
 
     /* ========== AD BELOW BUTTON ========== */
-    .ad-below-btn {
-      margin-top: 14px;
+    .ad-below {
+      margin-top: 12px;
       text-align: center;
       min-height: 50px;
-      background: rgba(255,255,255,0.02);
-      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -103,7 +98,7 @@
     /* ==================================== */
 
     #error-msg {
-      margin-top: 12px;
+      margin-top: 10px;
       color: #ff4444;
       font-size: 13px;
       text-align: center;
@@ -111,125 +106,95 @@
 
     #video-container {
       display: none;
-      margin-top: 18px;
+      margin-top: 16px;
     }
 
-    .video-wrapper {
+    .video-box {
       position: relative;
       width: 100%;
-      border-radius: 10px;
-      overflow: hidden;
-      background: transparent;
+      overflow: visible;
     }
 
     video {
       width: 100%;
+      height: auto;
       display: block;
-      background: transparent;
-      border-radius: 10px;
+      border-radius: 8px;
     }
 
     /* ========== HIDE NATIVE FULLSCREEN BUTTON ========== */
     video::-webkit-media-controls-fullscreen-button {
       display: none !important;
     }
-    video::-moz-media-controls {
-      filter: invert(1) brightness(1.5);
+    video::-webkit-media-controls-enclosure {
+      border-radius: 0 0 8px 8px;
     }
     /* ==================================================== */
 
-    /* ========== MAKE VIDEO CONTROLS WHITE/VISIBLE ========== */
-    video::-webkit-media-controls-panel {
-      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent) !important;
-    }
-    video::-webkit-media-controls-play-button,
-    video::-webkit-media-controls-timeline,
-    video::-webkit-media-controls-current-time-display,
-    video::-webkit-media-controls-time-remaining-display,
-    video::-webkit-media-controls-mute-button,
-    video::-webkit-media-controls-volume-slider {
-      filter: invert(1) brightness(2);
-    }
-    /* ======================================================= */
-
     .fs-btn {
       position: absolute;
-      bottom: 60px;
-      right: 12px;
-      background: rgba(255, 255, 255, 0.9);
+      bottom: 54px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.95);
       border: none;
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .fs-btn:active {
-      transform: scale(0.95);
-      background: rgba(255, 255, 255, 1);
+      z-index: 50;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
     .fs-btn svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       fill: #000;
     }
 
     /* ========== FULLSCREEN MODE ========== */
-    .video-wrapper.fs-active {
+    body.fs-mode {
+      overflow: hidden;
+    }
+
+    .video-box.fs {
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
       z-index: 999999 !important;
-      border-radius: 0 !important;
       background: #000 !important;
     }
 
-    .video-wrapper.fs-active video {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw !important;
-      height: 100vh !important;
+    .video-box.fs video {
+      width: 100vw;
+      height: 100vh;
       object-fit: contain;
       border-radius: 0;
     }
 
-    .video-wrapper.fs-active .fs-btn {
+    .video-box.fs .fs-btn {
       position: fixed;
-      bottom: 70px;
+      bottom: 60px;
       right: 16px;
       z-index: 1000000;
-    }
-
-    body.no-scroll {
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
     }
     /* ====================================== */
 
     .video-info {
-      margin-top: 10px;
+      margin-top: 8px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       color: #aaa;
     }
 
     .loading {
       display: inline-block;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       border: 2px solid rgba(0,0,0,0.3);
       border-radius: 50%;
       border-top-color: #000;
@@ -245,34 +210,34 @@
 </head>
 <body>
   <div class="container">
-    <h1 id="video-title">Loading...</h1>
+    <h1 id="title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
     
-    <!-- ========== AD ABOVE BUTTON (atOptions - Banner) ========== -->
-    <div class="ad-above-btn" id="ad-above"></div>
-    <!-- ========================================================== -->
+    <!-- ========== AD ABOVE BUTTON ========== -->
+    <div class="ad-above" id="ad1"></div>
+    <!-- ==================================== -->
     
-    <button id="watch-btn" class="btn" onclick="startWatch()">
+    <button id="btn" class="btn" onclick="watch()">
       Watch Video 🎬
     </button>
     
-    <!-- ========== AD BELOW BUTTON (invoke.js - Banner) ========== -->
-    <div class="ad-below-btn" id="ad-below"></div>
-    <!-- ========================================================== -->
+    <!-- ========== AD BELOW BUTTON ========== -->
+    <div class="ad-below" id="ad2"></div>
+    <!-- ==================================== -->
     
     <div id="error-msg"></div>
     
     <div id="video-container">
-      <div class="video-wrapper" id="vw">
-        <video id="vp" controls playsinline webkit-playsinline preload="metadata" controlsList="nodownload"></video>
+      <div class="video-box" id="vbox">
+        <video id="vid" controls playsinline webkit-playsinline preload="metadata" controlsList="nodownload"></video>
         
-        <button class="fs-btn" id="fs-btn" onclick="toggleFS()" title="Fullscreen">
-          <svg id="fs-icon" viewBox="0 0 24 24">
+        <button class="fs-btn" id="fsbtn" onclick="fullscreen()">
+          <svg id="fsicon" viewBox="0 0 24 24">
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
           </svg>
         </button>
       </div>
-      <div class="video-info" id="video-info"></div>
+      <div class="video-info" id="info"></div>
     </div>
   </div>
 
@@ -281,26 +246,20 @@
     tg.expand();
     tg.ready();
 
-    let vTitle = null;
-    let vId = null;
-    let isFS = false;
-    let isLandscape = false;
+    let vId, vTitle, isFS = false, isLS = false;
     const API = window.location.origin + '/api';
 
-    function err(msg) {
-      document.getElementById('error-msg').textContent = msg;
+    function err(m) {
+      document.getElementById('error-msg').textContent = m;
     }
 
-    function getVID() {
-      const sp = tg.initDataUnsafe?.start_param || '';
-      if (sp) return sp;
-      const params = new URLSearchParams(window.location.search);
-      return params.get('video_id') || 'vid_1';
+    function getID() {
+      const p = tg.initDataUnsafe?.start_param || new URLSearchParams(location.search).get('video_id');
+      return p || 'vid_1';
     }
 
-    // Load ads immediately - SWAPPED POSITIONS
     function loadAds() {
-      // AD ABOVE BUTTON (atOptions banner - 50x320)
+      // AD 1 - Above button (atOptions)
       window.atOptions = {
         'key': '3fc8a11a10d75d1b796ff86d8cc395c9',
         'format': 'iframe',
@@ -308,185 +267,156 @@
         'width': 320,
         'params': {}
       };
-      const aboveScript = document.createElement('script');
-      aboveScript.type = 'text/javascript';
-      aboveScript.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
-      document.getElementById('ad-above').appendChild(aboveScript);
+      const s1 = document.createElement('script');
+      s1.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
+      document.getElementById('ad1').appendChild(s1);
 
-      // AD BELOW BUTTON (invoke.js banner)
-      const belowScript = document.createElement('script');
-      belowScript.async = true;
-      belowScript.setAttribute('data-cfasync', 'false');
-      belowScript.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
-      document.head.appendChild(belowScript);
+      // AD 2 - Below button (invoke)
+      const s2 = document.createElement('script');
+      s2.async = true;
+      s2.setAttribute('data-cfasync', 'false');
+      s2.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
+      document.head.appendChild(s2);
 
-      const belowDiv = document.createElement('div');
-      belowDiv.id = 'container-257f53d4a564585de9b5b359319941c3';
-      document.getElementById('ad-below').appendChild(belowDiv);
+      const d2 = document.createElement('div');
+      d2.id = 'container-257f53d4a564585de9b5b359319941c3';
+      document.getElementById('ad2').appendChild(d2);
     }
 
     async function init() {
-      vId = getVID();
+      vId = getID();
       
       if (!vId) {
         err('No video ID');
-        document.getElementById('watch-btn').disabled = true;
+        document.getElementById('btn').disabled = true;
         return;
       }
 
       try {
-        const res = await fetch(`${API}/init?video_id=${encodeURIComponent(vId)}`);
-        const data = await res.json();
+        const r = await fetch(`${API}/init?video_id=${vId}`);
+        const d = await r.json();
 
-        if (!data.success) {
-          err(data.error || 'Failed to load');
-          document.getElementById('watch-btn').disabled = true;
+        if (!d.success) {
+          err(d.error || 'Failed');
+          document.getElementById('btn').disabled = true;
           return;
         }
 
-        vTitle = data.video.title;
-        document.getElementById('video-title').textContent = vTitle || 'Watch Video';
-        document.getElementById('subtitle').textContent = 'Click button to watch';
-
-        // Load ads after init
+        vTitle = d.video.title;
+        document.getElementById('title').textContent = vTitle || 'Watch Video';
+        document.getElementById('subtitle').textContent = 'Click to watch';
         loadAds();
 
       } catch (e) {
-        err('Connection error: ' + e.message);
-        document.getElementById('watch-btn').disabled = true;
+        err('Error: ' + e.message);
+        document.getElementById('btn').disabled = true;
       }
     }
 
-    async function startWatch() {
-      const btn = document.getElementById('watch-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading"></span>Loading Ad...';
+    async function watch() {
+      const b = document.getElementById('btn');
+      b.disabled = true;
+      b.innerHTML = '<span class="loading"></span>Loading Ad...';
 
       try {
-        // ========== MONETAG REWARDED AD ========== 
         if (window.show_9981288) {
           await show_9981288();
         }
-        // =========================================
-        
-        btn.innerHTML = '<span class="loading"></span>Loading Video...';
-        await loadVideo();
-
-      } catch (e) {
-        btn.innerHTML = '<span class="loading"></span>Loading Video...';
-        await loadVideo();
+        b.innerHTML = '<span class="loading"></span>Loading...';
+        await load();
+      } catch {
+        b.innerHTML = '<span class="loading"></span>Loading...';
+        await load();
       }
     }
 
-    async function loadVideo() {
+    async function load() {
       try {
-        const res = await fetch(`${API}/get-video?video_id=${encodeURIComponent(vId)}`);
-        const data = await res.json();
+        const r = await fetch(`${API}/get-video?video_id=${vId}`);
+        const d = await r.json();
 
-        if (!data.success) {
-          err(data.error || 'Failed to load video');
-          document.getElementById('watch-btn').disabled = false;
-          document.getElementById('watch-btn').textContent = 'Retry';
+        if (!d.success) {
+          err(d.error || 'Failed');
+          document.getElementById('btn').disabled = false;
+          document.getElementById('btn').textContent = 'Retry';
           return;
         }
 
-        showVideo(data.video);
-
+        show(d.video);
       } catch (e) {
         err('Failed: ' + e.message);
-        document.getElementById('watch-btn').disabled = false;
-        document.getElementById('watch-btn').textContent = 'Retry';
+        document.getElementById('btn').disabled = false;
+        document.getElementById('btn').textContent = 'Retry';
       }
     }
 
-    function showVideo(vid) {
+    function show(v) {
       err('');
-      document.getElementById('watch-btn').style.display = 'none';
+      document.getElementById('btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
-      document.getElementById('ad-below').style.display = 'none';
+      document.getElementById('ad2').style.display = 'none';
       
-      const vp = document.getElementById('vp');
-      const info = document.getElementById('video-info');
+      const vid = document.getElementById('vid');
+      const inf = document.getElementById('info');
       
-      vp.src = vid.video_url;
-      info.textContent = vid.title || '';
+      vid.src = v.video_url;
+      inf.textContent = v.title || '';
       
       document.getElementById('video-container').style.display = 'block';
       
-      vp.load();
+      vid.load();
       
-      vp.addEventListener('loadedmetadata', () => {
-        isLandscape = vp.videoWidth > vp.videoHeight;
+      vid.addEventListener('loadedmetadata', () => {
+        isLS = vid.videoWidth > vid.videoHeight;
       });
 
-      vp.play().catch(() => {});
-
-      vp.addEventListener('error', () => {
-        err('Playback error');
-      });
+      vid.play().catch(() => {});
+      vid.addEventListener('error', () => err('Playback error'));
     }
 
-    function toggleFS() {
-      const vw = document.getElementById('vw');
-      const icon = document.getElementById('fs-icon');
+    function fullscreen() {
+      const box = document.getElementById('vbox');
+      const icon = document.getElementById('fsicon');
       
       if (!isFS) {
-        vw.classList.add('fs-active');
-        document.body.classList.add('no-scroll');
+        box.classList.add('fs');
+        document.body.classList.add('fs-mode');
         
-        if (isLandscape) {
-          lockLandscape();
+        if (isLS && screen.orientation?.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
         }
         
-        if (vw.requestFullscreen) vw.requestFullscreen();
-        else if (vw.webkitRequestFullscreen) vw.webkitRequestFullscreen();
-        else if (vw.mozRequestFullScreen) vw.mozRequestFullScreen();
+        if (box.requestFullscreen) box.requestFullscreen();
+        else if (box.webkitRequestFullscreen) box.webkitRequestFullscreen();
         
         icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-        
         isFS = true;
       } else {
-        exitFS();
+        exit();
       }
     }
 
-    function exitFS() {
-      const vw = document.getElementById('vw');
-      const icon = document.getElementById('fs-icon');
+    function exit() {
+      const box = document.getElementById('vbox');
+      const icon = document.getElementById('fsicon');
       
-      vw.classList.remove('fs-active');
-      document.body.classList.remove('no-scroll');
+      box.classList.remove('fs');
+      document.body.classList.remove('fs-mode');
       
-      unlockOrientation();
+      if (screen.orientation?.unlock) screen.orientation.unlock();
       
       if (document.exitFullscreen) document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
       
       icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-      
       isFS = false;
     }
 
-    function lockLandscape() {
-      const orient = screen.orientation || screen.mozOrientation || screen.msOrientation;
-      if (orient && orient.lock) {
-        orient.lock('landscape').catch(() => {});
-      }
-    }
-
-    function unlockOrientation() {
-      const orient = screen.orientation || screen.mozOrientation || screen.msOrientation;
-      if (orient && orient.unlock) {
-        orient.unlock();
-      }
-    }
-
     document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) exitFS();
+      if (!document.fullscreenElement) exit();
     });
     document.addEventListener('webkitfullscreenchange', () => {
-      if (!document.webkitFullscreenElement) exitFS();
+      if (!document.webkitFullscreenElement) exit();
     });
 
     init();
