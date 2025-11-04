@@ -2,20 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Watch Video</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  
-  <!-- ========== MONETAG REWARDED AD SDK ========== -->
-  <script src='//libtl.com/sdk.js' data-zone='9981288' data-sdk='show_9981288'></script>
-  <!-- ============================================== -->
-  
+
+  <!-- ✅ Monetag Rewarded Ad SDK -->
+  <script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       width: 100%;
@@ -52,17 +48,6 @@
       text-align: center;
     }
 
-    /* ========== AD ABOVE BUTTON ========== */
-    .ad-above {
-      margin-bottom: 12px;
-      text-align: center;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /* ==================================== */
-
     .btn {
       background: linear-gradient(135deg, #32b8c6, #28a0ac);
       border: none;
@@ -76,26 +61,8 @@
       transition: transform 0.1s;
     }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      background: #555;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    /* ========== AD BELOW BUTTON ========== */
-    .ad-below {
-      margin-top: 12px;
-      text-align: center;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /* ==================================== */
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
 
     #error-msg {
       margin-top: 10px;
@@ -104,16 +71,9 @@
       text-align: center;
     }
 
-    #video-container {
-      display: none;
-      margin-top: 16px;
-    }
+    #video-container { display: none; margin-top: 16px; }
 
-    .video-box {
-      position: relative;
-      width: 100%;
-      overflow: visible;
-    }
+    .video-box { position: relative; width: 100%; overflow: visible; }
 
     video {
       width: 100%;
@@ -122,14 +82,8 @@
       border-radius: 8px;
     }
 
-    /* ========== HIDE NATIVE FULLSCREEN BUTTON ========== */
-    video::-webkit-media-controls-fullscreen-button {
-      display: none !important;
-    }
-    video::-webkit-media-controls-enclosure {
-      border-radius: 0 0 8px 8px;
-    }
-    /* ==================================================== */
+    video::-webkit-media-controls-fullscreen-button { display: none !important; }
+    video::-webkit-media-controls-enclosure { border-radius: 0 0 8px 8px; }
 
     .fs-btn {
       position: absolute;
@@ -148,16 +102,9 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
-    .fs-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: #000;
-    }
+    .fs-btn svg { width: 20px; height: 20px; fill: #000; }
 
-    /* ========== FULLSCREEN MODE ========== */
-    body.fs-mode {
-      overflow: hidden;
-    }
+    body.fs-mode { overflow: hidden; }
 
     .video-box.fs {
       position: fixed !important;
@@ -182,7 +129,6 @@
       right: 16px;
       z-index: 1000000;
     }
-    /* ====================================== */
 
     .video-info {
       margin-top: 8px;
@@ -203,29 +149,21 @@
       vertical-align: middle;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="container">
     <h1 id="title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
-    
-      
-    <button id="btn" class="btn" onclick="watch()">
-      Watch Video 🎬
-    </button>
-    
- 
-    
+
+    <button id="btn" class="btn" onclick="watch()">Watch Video 🎬</button>
+
     <div id="error-msg"></div>
-    
+
     <div id="video-container">
       <div class="video-box" id="vbox">
         <video id="vid" controls playsinline webkit-playsinline preload="metadata" controlsList="nodownload"></video>
-        
         <button class="fs-btn" id="fsbtn" onclick="fullscreen()">
           <svg id="fsicon" viewBox="0 0 24 24">
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
@@ -237,12 +175,12 @@
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
+    const tg = window.Telegram?.WebApp || {};
+    if (tg.expand) tg.expand();
+    if (tg.ready) tg.ready();
 
     let vId, vTitle, isFS = false, isLS = false;
-    const API = window.location.origin + '/api';
+    const API = (window.location.origin !== 'null' ? window.location.origin : '') + '/api';
 
     function err(m) {
       document.getElementById('error-msg').textContent = m;
@@ -253,11 +191,8 @@
       return p || 'vid_1';
     }
 
-    
-
     async function init() {
       vId = getID();
-      
       if (!vId) {
         err('No video ID');
         document.getElementById('btn').disabled = true;
@@ -268,16 +203,9 @@
         const r = await fetch(`${API}/init?video_id=${vId}`);
         const d = await r.json();
 
-        if (!d.success) {
-          err(d.error || 'Failed');
-          document.getElementById('btn').disabled = true;
-          return;
-        }
-
+        if (!d.success) throw new Error(d.error || 'Failed');
         vTitle = d.video.title;
         document.getElementById('title').textContent = vTitle || 'Watch Video';
-       
-
       } catch (e) {
         err('Error: ' + e.message);
         document.getElementById('btn').disabled = true;
@@ -289,35 +217,28 @@
       b.disabled = true;
       b.innerHTML = '<span class="loading"></span>Loading Ad...';
 
+      // ✅ Show Monetag rewarded ad (if available)
       try {
-        if (window.show_9981288) {
-          await show_9981288();
-        }
-        b.innerHTML = '<span class="loading"></span>Loading...';
-        await load();
-      } catch {
-        b.innerHTML = '<span class="loading"></span>Loading...';
-        await load();
+        if (window.show_9981288) await show_9981288();
+      } catch (e) {
+        console.warn('Ad load failed:', e);
       }
+
+      b.innerHTML = '<span class="loading"></span>Loading Video...';
+      await load();
     }
 
     async function load() {
+      const b = document.getElementById('btn');
       try {
         const r = await fetch(`${API}/get-video?video_id=${vId}`);
         const d = await r.json();
-
-        if (!d.success) {
-          err(d.error || 'Failed');
-          document.getElementById('btn').disabled = false;
-          document.getElementById('btn').textContent = 'Retry';
-          return;
-        }
-
+        if (!d.success) throw new Error(d.error || 'Failed');
         show(d.video);
       } catch (e) {
         err('Failed: ' + e.message);
-        document.getElementById('btn').disabled = false;
-        document.getElementById('btn').textContent = 'Retry';
+        b.disabled = false;
+        b.textContent = 'Retry';
       }
     }
 
@@ -325,18 +246,15 @@
       err('');
       document.getElementById('btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
-      document.getElementById('ad2').style.display = 'none';
-      
+
       const vid = document.getElementById('vid');
       const inf = document.getElementById('info');
-      
       vid.src = v.video_url;
       inf.textContent = v.title || '';
-      
+
       document.getElementById('video-container').style.display = 'block';
-      
+
       vid.load();
-      
       vid.addEventListener('loadedmetadata', () => {
         isLS = vid.videoWidth > vid.videoHeight;
       });
@@ -348,46 +266,44 @@
     function fullscreen() {
       const box = document.getElementById('vbox');
       const icon = document.getElementById('fsicon');
-      
       if (!isFS) {
         box.classList.add('fs');
         document.body.classList.add('fs-mode');
-        
-        if (isLS && screen.orientation?.lock) {
+
+        if (isLS && screen.orientation?.lock)
           screen.orientation.lock('landscape').catch(() => {});
-        }
-        
+
         if (box.requestFullscreen) box.requestFullscreen();
         else if (box.webkitRequestFullscreen) box.webkitRequestFullscreen();
-        
+
         icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
         isFS = true;
       } else {
-        exit();
+        exitFullscreen();
       }
     }
 
-    function exit() {
+    function exitFullscreen() {
+      if (!isFS) return;
       const box = document.getElementById('vbox');
       const icon = document.getElementById('fsicon');
-      
+
       box.classList.remove('fs');
       document.body.classList.remove('fs-mode');
-      
+
       if (screen.orientation?.unlock) screen.orientation.unlock();
-      
       if (document.exitFullscreen) document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-      
+
       icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
       isFS = false;
     }
 
     document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement) exit();
+      if (!document.fullscreenElement && isFS) exitFullscreen();
     });
     document.addEventListener('webkitfullscreenchange', () => {
-      if (!document.webkitFullscreenElement) exit();
+      if (!document.webkitFullscreenElement && isFS) exitFullscreen();
     });
 
     init();
