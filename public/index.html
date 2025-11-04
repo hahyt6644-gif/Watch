@@ -6,8 +6,9 @@
   <title>Watch Video</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
-  <!-- Monetag Rewarded Ad SDK -->
+  <!-- ========== MONETAG REWARDED AD SDK ========== -->
   <script src='//libtl.com/sdk.js' data-zone='9981288' data-sdk='show_9981288'></script>
+  <!-- ============================================== -->
   
   <style>
     * {
@@ -51,7 +52,7 @@
       text-align: center;
     }
 
-    /* Banner Ad Above Button */
+    /* ========== AD ABOVE BUTTON ========== */
     .ad-above {
       margin-bottom: 12px;
       text-align: center;
@@ -59,8 +60,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
+    /* ==================================== */
 
     .btn {
       background: linear-gradient(135deg, #32b8c6, #28a0ac);
@@ -85,7 +86,7 @@
       opacity: 0.6;
     }
 
-    /* Banner Ad Below Button */
+    /* ========== AD BELOW BUTTON ========== */
     .ad-below {
       margin-top: 12px;
       text-align: center;
@@ -93,8 +94,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
     }
+    /* ==================================== */
 
     #error-msg {
       margin-top: 10px;
@@ -121,9 +122,14 @@
       border-radius: 8px;
     }
 
+    /* ========== HIDE NATIVE FULLSCREEN BUTTON ========== */
     video::-webkit-media-controls-fullscreen-button {
       display: none !important;
     }
+    video::-webkit-media-controls-enclosure {
+      border-radius: 0 0 8px 8px;
+    }
+    /* ==================================================== */
 
     .fs-btn {
       position: absolute;
@@ -148,6 +154,7 @@
       fill: #000;
     }
 
+    /* ========== FULLSCREEN MODE ========== */
     body.fs-mode {
       overflow: hidden;
     }
@@ -175,6 +182,7 @@
       right: 16px;
       z-index: 1000000;
     }
+    /* ====================================== */
 
     .video-info {
       margin-top: 8px;
@@ -205,15 +213,17 @@
     <h1 id="title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
     
-    <!-- Banner Ad Above Button -->
-    <div class="ad-above" id="ad1"></div>
+      <!-- ========== AD BELOW BUTTON ========== -->
+    <div class="ad-below" id="ad2"></div>
+    <!-- ==================================== -->
     
     <button id="btn" class="btn" onclick="watch()">
       Watch Video 🎬
     </button>
     
-    <!-- Banner Ad Below Button -->
-    <div class="ad-below" id="ad2"></div>
+  <!-- ========== AD ABOVE BUTTON ========== -->
+    <div class="ad-above" id="ad1"></div>
+    <!-- ==================================== -->
     
     <div id="error-msg"></div>
     
@@ -249,18 +259,7 @@
     }
 
     function loadAds() {
-      // Banner Ad 1 - Above button (300x50)
-      const ad1Script = document.createElement('script');
-      ad1Script.async = true;
-      ad1Script.setAttribute('data-cfasync', 'false');
-      ad1Script.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
-      document.head.appendChild(ad1Script);
-
-      const ad1Div = document.createElement('div');
-      ad1Div.id = 'container-257f53d4a564585de9b5b359319941c3';
-      document.getElementById('ad1').appendChild(ad1Div);
-
-      // Banner Ad 2 - Below button (320x50)
+      // AD 1 - Above button (atOptions)
       window.atOptions = {
         'key': '3fc8a11a10d75d1b796ff86d8cc395c9',
         'format': 'iframe',
@@ -268,10 +267,20 @@
         'width': 320,
         'params': {}
       };
-      const ad2Script = document.createElement('script');
-      ad2Script.type = 'text/javascript';
-      ad2Script.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
-      document.getElementById('ad2').appendChild(ad2Script);
+      const s1 = document.createElement('script');
+      s1.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
+      document.getElementById('ad1').appendChild(s1);
+
+      // AD 2 - Below button (invoke)
+      const s2 = document.createElement('script');
+      s2.async = true;
+      s2.setAttribute('data-cfasync', 'false');
+      s2.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
+      document.head.appendChild(s2);
+
+      const d2 = document.createElement('div');
+      d2.id = 'container-257f53d4a564585de9b5b359319941c3';
+      document.getElementById('ad2').appendChild(d2);
     }
 
     async function init() {
@@ -310,7 +319,6 @@
       b.innerHTML = '<span class="loading"></span>Loading Ad...';
 
       try {
-        // Show rewarded ad
         if (window.show_9981288) {
           await show_9981288();
         }
