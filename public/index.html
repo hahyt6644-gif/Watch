@@ -128,13 +128,36 @@
       background: #000;
     }
 
+    /* ========== HIDE NATIVE FULLSCREEN BUTTON ========== */
+    video::-webkit-media-controls-fullscreen-button {
+      display: none !important;
+    }
+    video::-moz-media-controls-fullscreen-button {
+      display: none !important;
+    }
+    /* ==================================================== */
+
+    /* ========== MAKE VIDEO CONTROLS WHITE/VISIBLE ========== */
+    video::-webkit-media-controls-panel {
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent) !important;
+    }
+    video::-webkit-media-controls-play-button,
+    video::-webkit-media-controls-timeline,
+    video::-webkit-media-controls-current-time-display,
+    video::-webkit-media-controls-time-remaining-display,
+    video::-webkit-media-controls-mute-button,
+    video::-webkit-media-controls-volume-slider {
+      filter: brightness(1.5) contrast(1.2);
+    }
+    /* ======================================================= */
+
     .fs-btn {
       position: absolute;
       bottom: 56px;
       right: 12px;
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(4px);
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       width: 40px;
       height: 40px;
       border-radius: 6px;
@@ -148,6 +171,7 @@
 
     .fs-btn:active {
       transform: scale(0.95);
+      background: rgba(0, 0, 0, 0.9);
     }
 
     .fs-btn svg {
@@ -181,9 +205,10 @@
 
     .video-wrapper.fs-active .fs-btn {
       position: fixed;
-      bottom: 16px;
+      bottom: 70px;
       right: 16px;
       z-index: 1000000;
+      background: rgba(0, 0, 0, 0.85);
     }
 
     body.no-scroll {
@@ -238,9 +263,9 @@
     
     <div id="video-container">
       <div class="video-wrapper" id="vw">
-        <video id="vp" controls playsinline webkit-playsinline preload="metadata"></video>
+        <video id="vp" controls playsinline webkit-playsinline preload="metadata" controlsList="nodownload"></video>
         
-        <button class="fs-btn" id="fs-btn" onclick="toggleFS()">
+        <button class="fs-btn" id="fs-btn" onclick="toggleFS()" title="Fullscreen">
           <svg id="fs-icon" viewBox="0 0 24 24">
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
           </svg>
@@ -415,7 +440,7 @@
           lockLandscape();
         }
         
-        // Native fullscreen
+        // Native fullscreen API
         if (vw.requestFullscreen) vw.requestFullscreen();
         else if (vw.webkitRequestFullscreen) vw.webkitRequestFullscreen();
         else if (vw.mozRequestFullScreen) vw.mozRequestFullScreen();
