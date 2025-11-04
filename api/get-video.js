@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 const MONGODB_URI = "mongodb+srv://videobot_admin:SVMT24NlLWZV1PdY@cluster0.ggemqlz.mongodb.net/video_bot?retryWrites=true&w=majority";
 
 // Get fresh NDUS cookie from your Terabox account
-const TERABOX_COOKIE = " ndus=Y2YqaCTteHuiU3Ud_MYU7vHoVW4DNBi0MPmg_1tQ";
+const TERABOX_COOKIE = " ndus=YQvEpgEteHui67i_O9F6k9TN_c5LVBAv51DyX-tw";
 
 let cachedClient = null;
 
