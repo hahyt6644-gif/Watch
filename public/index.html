@@ -52,7 +52,7 @@
       text-align: center;
     }
 
-    /* ========== AD ABOVE BUTTON (now the one from effectivegatecpm) ========== */
+    /* ========== AD ABOVE BUTTON ========== */
     .ad-above {
       margin-bottom: 12px;
       text-align: center;
@@ -61,7 +61,7 @@
       align-items: center;
       justify-content: center;
     }
-    /* ======================================================================= */
+    /* ==================================== */
 
     .btn {
       background: linear-gradient(135deg, #32b8c6, #28a0ac);
@@ -86,7 +86,7 @@
       opacity: 0.6;
     }
 
-    /* ========== AD BELOW BUTTON (now the one from highperformanceformat) ========== */
+    /* ========== AD BELOW BUTTON ========== */
     .ad-below {
       margin-top: 12px;
       text-align: center;
@@ -95,7 +95,7 @@
       align-items: center;
       justify-content: center;
     }
-    /* ========================================================================== */
+    /* ==================================== */
 
     #error-msg {
       margin-top: 10px;
@@ -122,12 +122,14 @@
       border-radius: 8px;
     }
 
+    /* ========== HIDE NATIVE FULLSCREEN BUTTON ========== */
     video::-webkit-media-controls-fullscreen-button {
       display: none !important;
     }
     video::-webkit-media-controls-enclosure {
       border-radius: 0 0 8px 8px;
     }
+    /* ==================================================== */
 
     .fs-btn {
       position: absolute;
@@ -152,6 +154,7 @@
       fill: #000;
     }
 
+    /* ========== FULLSCREEN MODE ========== */
     body.fs-mode {
       overflow: hidden;
     }
@@ -179,6 +182,7 @@
       right: 16px;
       z-index: 1000000;
     }
+    /* ====================================== */
 
     .video-info {
       margin-top: 8px;
@@ -209,17 +213,12 @@
     <h1 id="title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
     
-    <!-- ========== AD ABOVE BUTTON (now from effectivegatecpm) ========== -->
-    <div class="ad-above" id="ad2"></div>
-    <!-- ================================================================ -->
-    
+      
     <button id="btn" class="btn" onclick="watch()">
       Watch Video 🎬
     </button>
     
-    <!-- ========== AD BELOW BUTTON (now from highperformanceformat) ========== -->
-    <div class="ad-below" id="ad1"></div>
-    <!-- ===================================================================== -->
+ 
     
     <div id="error-msg"></div>
     
@@ -254,30 +253,7 @@
       return p || 'vid_1';
     }
 
-    function loadAds() {
-      // AD 2 (now ABOVE button) - effectivegatecpm invoke ad
-      const s2 = document.createElement('script');
-      s2.async = true;
-      s2.setAttribute('data-cfasync', 'false');
-      s2.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
-      document.head.appendChild(s2);
-
-      const d2 = document.createElement('div');
-      d2.id = 'container-257f53d4a564585de9b5b359319941c3';
-      document.getElementById('ad2').appendChild(d2);
-
-      // AD 1 (now BELOW button) - highperformanceformat atOptions ad
-      window.atOptions = {
-        'key': '3fc8a11a10d75d1b796ff86d8cc395c9',
-        'format': 'iframe',
-        'height': 50,
-        'width': 320,
-        'params': {}
-      };
-      const s1 = document.createElement('script');
-      s1.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
-      document.getElementById('ad1').appendChild(s1);
-    }
+    
 
     async function init() {
       vId = getID();
@@ -350,8 +326,7 @@
       err('');
       document.getElementById('btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
-      document.getElementById('ad1').style.display = 'none'; // hide ad below when video starts
-      document.getElementById('ad2').style.display = 'none'; // hide ad above when video starts
+      document.getElementById('ad2').style.display = 'none';
       
       const vid = document.getElementById('vid');
       const inf = document.getElementById('info');
