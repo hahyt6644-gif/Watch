@@ -51,8 +51,8 @@
       text-align: center;
     }
 
-    /* ========== TOP BANNER AD (Above Button) ========== */
-    .ad-top {
+    /* ========== AD ABOVE BUTTON ========== */
+    .ad-above-btn {
       margin-bottom: 14px;
       text-align: center;
       min-height: 50px;
@@ -62,7 +62,7 @@
       align-items: center;
       justify-content: center;
     }
-    /* ================================================== */
+    /* ==================================== */
 
     .btn {
       background: linear-gradient(135deg, #32b8c6, #28a0ac);
@@ -89,8 +89,8 @@
       box-shadow: none;
     }
 
-    /* ========== BOTTOM BANNER AD (Below Button) ========== */
-    .ad-bottom {
+    /* ========== AD BELOW BUTTON ========== */
+    .ad-below-btn {
       margin-top: 14px;
       text-align: center;
       min-height: 50px;
@@ -100,7 +100,7 @@
       align-items: center;
       justify-content: center;
     }
-    /* ==================================================== */
+    /* ==================================== */
 
     #error-msg {
       margin-top: 12px;
@@ -117,29 +117,30 @@
     .video-wrapper {
       position: relative;
       width: 100%;
-      background: #000;
       border-radius: 10px;
       overflow: hidden;
+      background: transparent;
     }
 
     video {
       width: 100%;
       display: block;
-      background: #000;
+      background: transparent;
+      border-radius: 10px;
     }
 
     /* ========== HIDE NATIVE FULLSCREEN BUTTON ========== */
     video::-webkit-media-controls-fullscreen-button {
       display: none !important;
     }
-    video::-moz-media-controls-fullscreen-button {
-      display: none !important;
+    video::-moz-media-controls {
+      filter: invert(1) brightness(1.5);
     }
     /* ==================================================== */
 
     /* ========== MAKE VIDEO CONTROLS WHITE/VISIBLE ========== */
     video::-webkit-media-controls-panel {
-      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent) !important;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent) !important;
     }
     video::-webkit-media-controls-play-button,
     video::-webkit-media-controls-timeline,
@@ -147,17 +148,16 @@
     video::-webkit-media-controls-time-remaining-display,
     video::-webkit-media-controls-mute-button,
     video::-webkit-media-controls-volume-slider {
-      filter: brightness(1.5) contrast(1.2);
+      filter: invert(1) brightness(2);
     }
     /* ======================================================= */
 
     .fs-btn {
       position: absolute;
-      bottom: 56px;
+      bottom: 60px;
       right: 12px;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
       width: 40px;
       height: 40px;
       border-radius: 6px;
@@ -167,17 +167,18 @@
       justify-content: center;
       z-index: 100;
       transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .fs-btn:active {
       transform: scale(0.95);
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(255, 255, 255, 1);
     }
 
     .fs-btn svg {
       width: 24px;
       height: 24px;
-      fill: white;
+      fill: #000;
     }
 
     /* ========== FULLSCREEN MODE ========== */
@@ -201,6 +202,7 @@
       width: 100vw !important;
       height: 100vh !important;
       object-fit: contain;
+      border-radius: 0;
     }
 
     .video-wrapper.fs-active .fs-btn {
@@ -208,7 +210,6 @@
       bottom: 70px;
       right: 16px;
       z-index: 1000000;
-      background: rgba(0, 0, 0, 0.85);
     }
 
     body.no-scroll {
@@ -247,17 +248,17 @@
     <h1 id="video-title">Loading...</h1>
     <p id="subtitle">Preparing video...</p>
     
-    <!-- ========== TOP BANNER AD (Above Button) ========== -->
-    <div class="ad-top" id="ad-top"></div>
-    <!-- ================================================== -->
+    <!-- ========== AD ABOVE BUTTON (atOptions - Banner) ========== -->
+    <div class="ad-above-btn" id="ad-above"></div>
+    <!-- ========================================================== -->
     
     <button id="watch-btn" class="btn" onclick="startWatch()">
       Watch Video 🎬
     </button>
     
-    <!-- ========== BOTTOM BANNER AD (Below Button) ========== -->
-    <div class="ad-bottom" id="ad-bottom"></div>
-    <!-- ==================================================== -->
+    <!-- ========== AD BELOW BUTTON (invoke.js - Banner) ========== -->
+    <div class="ad-below-btn" id="ad-below"></div>
+    <!-- ========================================================== -->
     
     <div id="error-msg"></div>
     
@@ -297,20 +298,9 @@
       return params.get('video_id') || 'vid_1';
     }
 
-    // Load ads immediately
+    // Load ads immediately - SWAPPED POSITIONS
     function loadAds() {
-      // TOP AD
-      const topScript = document.createElement('script');
-      topScript.async = true;
-      topScript.setAttribute('data-cfasync', 'false');
-      topScript.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
-      document.head.appendChild(topScript);
-
-      const topDiv = document.createElement('div');
-      topDiv.id = 'container-257f53d4a564585de9b5b359319941c3';
-      document.getElementById('ad-top').appendChild(topDiv);
-
-      // BOTTOM AD
+      // AD ABOVE BUTTON (atOptions banner - 50x320)
       window.atOptions = {
         'key': '3fc8a11a10d75d1b796ff86d8cc395c9',
         'format': 'iframe',
@@ -318,10 +308,21 @@
         'width': 320,
         'params': {}
       };
-      const botScript = document.createElement('script');
-      botScript.type = 'text/javascript';
-      botScript.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
-      document.getElementById('ad-bottom').appendChild(botScript);
+      const aboveScript = document.createElement('script');
+      aboveScript.type = 'text/javascript';
+      aboveScript.src = '//www.highperformanceformat.com/3fc8a11a10d75d1b796ff86d8cc395c9/invoke.js';
+      document.getElementById('ad-above').appendChild(aboveScript);
+
+      // AD BELOW BUTTON (invoke.js banner)
+      const belowScript = document.createElement('script');
+      belowScript.async = true;
+      belowScript.setAttribute('data-cfasync', 'false');
+      belowScript.src = '//pl27977828.effectivegatecpm.com/257f53d4a564585de9b5b359319941c3/invoke.js';
+      document.head.appendChild(belowScript);
+
+      const belowDiv = document.createElement('div');
+      belowDiv.id = 'container-257f53d4a564585de9b5b359319941c3';
+      document.getElementById('ad-below').appendChild(belowDiv);
     }
 
     async function init() {
@@ -402,7 +403,7 @@
       err('');
       document.getElementById('watch-btn').style.display = 'none';
       document.getElementById('subtitle').style.display = 'none';
-      document.getElementById('ad-bottom').style.display = 'none';
+      document.getElementById('ad-below').style.display = 'none';
       
       const vp = document.getElementById('vp');
       const info = document.getElementById('video-info');
@@ -416,7 +417,6 @@
       
       vp.addEventListener('loadedmetadata', () => {
         isLandscape = vp.videoWidth > vp.videoHeight;
-        console.log(`Video: ${vp.videoWidth}x${vp.videoHeight}, Landscape: ${isLandscape}`);
       });
 
       vp.play().catch(() => {});
@@ -431,21 +431,17 @@
       const icon = document.getElementById('fs-icon');
       
       if (!isFS) {
-        // Enter fullscreen
         vw.classList.add('fs-active');
         document.body.classList.add('no-scroll');
         
-        // Lock to landscape if video is landscape
         if (isLandscape) {
           lockLandscape();
         }
         
-        // Native fullscreen API
         if (vw.requestFullscreen) vw.requestFullscreen();
         else if (vw.webkitRequestFullscreen) vw.webkitRequestFullscreen();
         else if (vw.mozRequestFullScreen) vw.mozRequestFullScreen();
         
-        // Exit icon
         icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
         
         isFS = true;
@@ -486,7 +482,6 @@
       }
     }
 
-    // Handle ESC and back button
     document.addEventListener('fullscreenchange', () => {
       if (!document.fullscreenElement) exitFS();
     });
