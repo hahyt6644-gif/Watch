@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       console.log('Processing Terabox link:', videoUrl);
       
       // Call TeraSnap API to get direct/proxy video URL
-      const terasnapResponse = await fetch('https://terasnap.netlify.app/api/download', {
+      const terasnapResponse = await fetch('https://itz-tera.netlify.app/api/download', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
