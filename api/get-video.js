@@ -78,14 +78,17 @@ export default async function handler(req, res) {
 
       // Return the proxied video URL
       return res.status(200).json({
-        success: true,
-        video: {
-          video_url: terasnapData.proxy_url || terasnapData.direct_url,
-          title: video.title,
-          thumbnail: terasnapData.thumbnail || null,
-          file_size: terasnapData.file_size || null
-        }
-      });
+  success: true,
+  video: {
+    video_url:
+      terasnapData.video.proxy_url ||
+      terasnapData.video.download_link,
+
+    title: video.title || terasnapData.video.file_name,
+    thumbnail: terasnapData.video.thumbnail || null,
+    file_size: terasnapData.video.file_size || null
+  }
+});
       
     } else {
       // Direct video link (MP4, etc.)
