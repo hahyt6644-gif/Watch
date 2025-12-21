@@ -7,13 +7,8 @@
 
 <title>Watch Video</title>
 
-<!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- Monetag -->
-<script src="//libtl.com/sdk.js"
-        data-zone="9981288"
-        data-sdk="show_9981288"></script>
+<script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,29 +21,21 @@ html,body{
   overflow:hidden;
 }
 
-/* ---------- UI CARD ---------- */
+/* ---------- UI ---------- */
 #ui{
-  padding:10px; /* reduced */
+  padding:10px;
 }
 .card{
   max-width:520px;
   margin:auto;
   background:#111;
   color:#fff;
-  padding:12px; /* reduced */
+  padding:12px;
   border-radius:14px;
   text-align:center;
 }
-.card h2{
-  font-size:16px;     /* smaller title */
-  margin-bottom:4px; /* less height */
-  line-height:1.2;
-}
-.card p{
-  font-size:12px;
-  opacity:.65;
-  margin-bottom:8px;
-}
+.card h2{font-size:16px;margin-bottom:4px}
+.card p{font-size:12px;opacity:.65;margin-bottom:8px}
 .card button{
   width:100%;
   padding:12px;
@@ -68,10 +55,20 @@ html,body{
   z-index:999999;
 }
 
-/* floating buttons */
+/* ✅ BUTTON LAYER (NOT ROTATED) */
+#controls{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:0;
+  z-index:1000000;
+  pointer-events:none; /* let iframe get touch */
+}
+
 .ctrl-btn{
   position:fixed;
-  z-index:1000000;
+  top:10px;
   padding:7px 10px;
   border:none;
   border-radius:999px;
@@ -80,37 +77,30 @@ html,body{
   font-size:13px;
   font-weight:600;
   backdrop-filter:blur(6px);
+  pointer-events:auto;
 }
 
-/* back button */
-#backBtn{
-  top:8px;
-  left:8px;
-}
+/* exact positions – SAME in all modes */
+#backBtn{ left:10px; }
+#rotateBtn{ right:10px; }
 
-/* rotate/fullscreen button */
-#rotateBtn{
-  top:8px;
-  right:8px;
-}
-
-/* iframe wrapper */
+/* ---------- VIDEO FRAME ---------- */
 #frame-wrap{
   position:absolute;
   inset:0;
   overflow:hidden;
 }
 
-/* NORMAL MODE (slight zoom) */
+/* NORMAL */
 #frame-wrap iframe{
   width:100%;
   height:100%;
   border:none;
-  transform:scale(1.05); /* small zoom */
+  transform:scale(1.05);
   transition:transform .35s ease;
 }
 
-/* ROTATE MODE (landscape + less zoom) */
+/* ROTATE MODE */
 body.rotate #frame-wrap iframe{
   width:100vh;
   height:100vw;
@@ -139,8 +129,11 @@ body.rotate #frame-wrap iframe{
 
 <!-- PLAYER -->
 <div id="player">
-  <button id="backBtn" class="ctrl-btn" onclick="goBack()">←</button>
-  <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⛶ Fullscreen</button>
+  <!-- ✅ controls layer (never rotates) -->
+  <div id="controls">
+    <button id="backBtn" class="ctrl-btn" onclick="goBack()">←</button>
+    <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⛶ Fullscreen</button>
+  </div>
 
   <div id="frame-wrap">
     <iframe id="playerFrame" allow="autoplay"></iframe>
@@ -148,17 +141,15 @@ body.rotate #frame-wrap iframe{
 </div>
 
 <script>
-/* ---------- TELEGRAM ---------- */
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
-/* ---------- CONFIG ---------- */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let shareURL = "";
 
-/* ---------- LOAD TITLE ---------- */
+/* load title */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -166,47 +157,33 @@ let shareURL = "";
     if(d.success && d.video){
       title.textContent = d.video.title;
       shareURL = d.video.video_url;
-    }else{
-      title.textContent = "Video not found";
-    }
+    }else title.textContent="Video not found";
   }catch{
-    title.textContent = "Error loading video";
+    title.textContent="Error loading video";
   }
 })();
 
-/* ---------- WATCH ---------- */
 async function watch(){
-  watchBtn.disabled = true;
-  watchBtn.textContent = "Loading...";
-
+  watchBtn.disabled=true;
+  watchBtn.textContent="Loading...";
   await showAdSafe(6000);
   openPlayer();
 }
 
-/* ---------- SAFE AD ---------- */
 function showAdSafe(timeout=6000){
   return new Promise(resolve=>{
     let done=false;
-    const finish=()=>{ if(!done){done=true;resolve()} };
-    setTimeout(finish, timeout);
-
+    const finish=()=>{if(!done){done=true;resolve()}};
+    setTimeout(finish,timeout);
     try{
-      show_9981288({
-        onRewarded:finish,
-        onClose:finish,
-        onError:finish
-      });
-    }catch{
-      finish();
-    }
+      show_9981288({onRewarded:finish,onClose:finish,onError:finish});
+    }catch{finish();}
   });
 }
 
-/* ---------- PLAYER ---------- */
 function openPlayer(){
   ui.style.display="none";
   player.style.display="block";
-
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(shareURL);
@@ -214,20 +191,17 @@ function openPlayer(){
 
 function goBack(){
   document.body.classList.remove("rotate");
-  rotateBtn.textContent = "⛶ Fullscreen";
-
+  rotateBtn.textContent="⛶ Fullscreen";
   player.style.display="none";
   playerFrame.src="";
-
   ui.style.display="block";
   watchBtn.disabled=false;
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* ---------- ROTATE TOGGLE ---------- */
 function toggleRotate(){
-  const isRotated = document.body.classList.toggle("rotate");
-  rotateBtn.textContent = isRotated ? "⟳ Normal" : "⛶ Fullscreen";
+  const r = document.body.classList.toggle("rotate");
+  rotateBtn.textContent = r ? "⟳ Normal" : "⛶ Fullscreen";
 }
 </script>
 
