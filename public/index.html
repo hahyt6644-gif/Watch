@@ -176,7 +176,7 @@ const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let videoURL = "";
 
-/* Load title early */
+/* load title early */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -190,12 +190,30 @@ let videoURL = "";
   }
 })();
 
+/* WATCH */
 async function watch(){
   watchBtn.disabled=true;
   watchBtn.textContent="Loading…";
 
+  // 🔑 START LOADING IFRAME BEFORE AD
+  preloadIframe();
+
+  // show ad while iframe loads
   await showAdSafe(6000);
+
+  // now show player instantly
   openPlayer();
+}
+
+function preloadIframe(){
+  playerFrame.src =
+    "https://playterabox.com/embed/player?url=" +
+    encodeURIComponent(videoURL);
+
+  // auto-hide loader no matter what
+  setTimeout(()=>{
+    loader.style.display="none";
+  }, 1500);
 }
 
 function showAdSafe(ms){
@@ -215,18 +233,6 @@ function openPlayer(){
   player.className="normal";
   controlsPlayer.style.display="flex";
   controlsScreen.style.display="none";
-
-  loader.style.display="flex";
-
-  // 🔑 SET SRC
-  playerFrame.src =
-    "https://playterabox.com/embed/player?url=" +
-    encodeURIComponent(videoURL);
-
-  // 🔑 HIDE LOADER GUARANTEED
-  setTimeout(()=>{
-    loader.style.display="none";
-  }, 1200); // safe delay
 }
 
 function goBack(){
