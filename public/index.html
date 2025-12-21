@@ -26,7 +26,7 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ================= WATCH SCREEN ================= */
+/* ================= WATCH UI ================= */
 #ui{
   padding:12px;
   background:#f2f3f5;
@@ -40,15 +40,8 @@ html,body{
   border-radius:14px;
   text-align:center;
 }
-.card h2{
-  font-size:15px;
-  margin-bottom:6px;
-}
-.card p{
-  font-size:12px;
-  opacity:.65;
-  margin-bottom:10px;
-}
+.card h2{font-size:15px;margin-bottom:6px}
+.card p{font-size:12px;opacity:.65;margin-bottom:10px}
 .card button{
   width:100%;
   padding:12px;
@@ -59,63 +52,75 @@ html,body{
   background:#22b8b0;
 }
 
-/* ================= PLAYER ================= */
+/* ================= PLAYER WRAPPER ================= */
 #player{
   display:none;
   position:fixed;
   inset:0;
   background:#000;
   z-index:999999;
-}
-
-/* controls */
-.ctrl{
-  position:fixed;
-  top:calc(8px + var(--tg-safe-area-inset-top));
-  z-index:1000000;
-  padding:6px 10px;
-  border:none;
-  border-radius:999px;
-  background:rgba(0,0,0,.6);
-  color:#fff;
-  font-size:13px;
-  font-weight:600;
-  backdrop-filter:blur(6px);
-}
-#backBtn{
-  left:calc(8px + var(--tg-safe-area-inset-left));
-}
-#fsBtn{
-  right:calc(8px + var(--tg-safe-area-inset-right));
-}
-
-/* frame wrapper */
-#wrap{
-  position:absolute;
-  inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
+/* PLAYER BOX (controls attached here) */
+#player-box{
+  position:relative;
+  width:100%;
+  max-width:420px;      /* 👈 portrait width */
+  aspect-ratio:9/16;   /* portrait ratio */
+  background:#000;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+/* landscape fullscreen box */
+#player.fullscreen #player-box{
+  max-width:90vw;
+  aspect-ratio:16/9;
+}
+
+/* CONTROLS BAR (inside player) */
+#controls{
+  position:absolute;
+  top:6px;
+  left:6px;
+  right:6px;
+  display:flex;
+  justify-content:space-between;
+  z-index:10;
+  pointer-events:none;
+}
+
+.ctrl-btn{
+  pointer-events:auto;
+  padding:6px 10px;
+  border:none;
+  border-radius:999px;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  font-size:13px;
+  font-weight:600;
+  backdrop-filter:blur(6px);
+}
+
 /* iframe */
 #playerFrame{
-  border:none;
   width:100%;
   height:100%;
+  border:none;
   transform-origin:center center;
-  transition:transform .25s ease;
+  transition:transform .3s ease;
 }
 
-/* NORMAL MODE (slight zoom) */
+/* NORMAL */
 .normal #playerFrame{
-  transform:scale(1.05);
+  transform:scale(1.02);
 }
 
-/* FULLSCREEN + ROTATED (less zoom) */
+/* FULLSCREEN ROTATED */
 .fullscreen #playerFrame{
-  width:100vh;
-  height:100vw;
   transform:rotate(90deg) scale(1.02);
 }
 </style>
@@ -134,11 +139,15 @@ html,body{
 
 <!-- PLAYER -->
 <div id="player" class="normal">
-  <button id="backBtn" class="ctrl" onclick="goBack()">←</button>
-  <button id="fsBtn" class="ctrl" onclick="toggleFS()">⛶ Fullscreen</button>
+  <div id="player-box">
 
-  <div id="wrap">
+    <div id="controls">
+      <button class="ctrl-btn" onclick="goBack()">←</button>
+      <button id="rotateBtn" class="ctrl-btn" onclick="toggleFS()">⛶ Fullscreen</button>
+    </div>
+
     <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
+
   </div>
 </div>
 
@@ -161,18 +170,16 @@ let videoURL = "";
     if(d.success){
       title.textContent = d.video.title;
       videoURL = d.video.video_url;
-    }else{
-      title.textContent = "Video not found";
-    }
+    }else title.textContent="Video not found";
   }catch{
-    title.textContent = "Load error";
+    title.textContent="Load error";
   }
 })();
 
-/* ================= WATCH FLOW ================= */
+/* ================= WATCH ================= */
 async function watch(){
-  watchBtn.disabled = true;
-  watchBtn.textContent = "Loading...";
+  watchBtn.disabled=true;
+  watchBtn.textContent="Loading...";
   await showAdSafe(6000);
   openPlayer();
 }
@@ -192,14 +199,14 @@ function showAdSafe(ms){
 /* ================= PLAYER ================= */
 function openPlayer(){
   ui.style.display="none";
-  player.style.display="block";
+  player.style.display="flex";
   player.className="normal";
+
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(videoURL);
 }
 
-/* ================= BACK ================= */
 function goBack(){
   exitFS();
   playerFrame.src="";
@@ -209,9 +216,9 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* ================= FULLSCREEN ================= */
+/* ================= FULLSCREEN / ROTATE ================= */
 function toggleFS(){
-  if(!tg.isFullscreen){
+  if(!player.classList.contains("fullscreen")){
     enterFS();
   }else{
     exitFS();
@@ -223,8 +230,9 @@ function enterFS(){
     tg.requestFullscreen();
     tg.lockOrientation();
   }
-  player.className="fullscreen";
-  fsBtn.textContent="⟳ Normal";
+  player.classList.remove("normal");
+  player.classList.add("fullscreen");
+  rotateBtn.textContent="⟳ Normal";
 }
 
 function exitFS(){
@@ -232,17 +240,10 @@ function exitFS(){
     tg.exitFullscreen();
     tg.unlockOrientation();
   }
-  player.className="normal";
-  fsBtn.textContent="⛶ Fullscreen";
+  player.classList.remove("fullscreen");
+  player.classList.add("normal");
+  rotateBtn.textContent="⛶ Fullscreen";
 }
-
-/* ================= EVENTS ================= */
-tg.onEvent("fullscreenChanged",()=>{
-  if(!tg.isFullscreen){
-    player.className="normal";
-    fsBtn.textContent="⛶ Fullscreen";
-  }
-});
 </script>
 
 </body>
