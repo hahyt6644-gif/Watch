@@ -40,9 +40,8 @@ export default async function handler(req, res) {
     const videoUrl = video.video_url;
 
     // Check if it's a Terabox link that needs processing
-    if (videoUrl.includes('terabox.com') || videoUrl.includes('1024terabox.com') || videoUrl.includes('teraboxurl.com')) {
-      
-      console.log('Processing Terabox link:', videoUrl);
+    if (/terabox\./i.test(videoUrl)) {  // Matches any domain containing 'terabox.'
+  console.log('Processing Terabox link:', videoUrl);
       
       // Call TeraSnap API to get direct/proxy video URL
       const terasnapResponse = await fetch('https://tera-api-two.vercel.app/', {
