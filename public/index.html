@@ -51,7 +51,7 @@ html,body{
   color:#000;
 }
 
-/* ---------- PLAYER (FULL RED BOX) ---------- */
+/* ---------- PLAYER (RED BOX FULLSCREEN AREA) ---------- */
 #player{
   display:none;
   position:fixed;
@@ -60,42 +60,57 @@ html,body{
   z-index:999999;
 }
 
+/* FULL AREA */
 #playerBox{
   position:absolute;
   inset:0;
   background:#000;
+  overflow:hidden;
 }
 
 /* ---------- IFRAME ---------- */
 #playerFrame{
+  position:absolute;
   width:100%;
   height:100%;
   border:none;
   background:#000;
 }
 
-/* ---------- CONTROLS ---------- */
-.ctrl{
+/* ROTATED FULLSCREEN */
+#player.fullscreen #playerFrame{
+  width:100vh;
+  height:100vw;
+  transform:rotate(90deg);
+  transform-origin:center;
+  top:50%;
+  left:50%;
+  translate:-50% -50%;
+}
+
+/* ---------- TOP CONTROLS BAR ---------- */
+#controls{
   position:absolute;
-  padding:6px 12px;
-  border:none;
-  border-radius:6px;
+  top:0;
+  left:0;
+  right:0;
+  height:48px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 10px;
+  background:linear-gradient(to bottom, rgba(0,0,0,.6), transparent);
+  z-index:20;
+}
+
+/* BUTTONS */
+.ctrl{
   background:rgba(0,0,0,.6);
+  border:none;
   color:#fff;
-  font-size:14px;
-  z-index:10;
-}
-
-/* Back (top-right) */
-#btnBack{
-  top:12px;
-  right:12px;
-}
-
-/* Fullscreen / Normal (bottom-right) */
-#btnToggle{
-  bottom:12px;
-  right:12px;
+  font-size:20px;
+  padding:6px 10px;
+  border-radius:6px;
 }
 
 /* ---------- LOADER ---------- */
@@ -132,8 +147,11 @@ html,body{
 
     <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
 
-    <button id="btnBack" class="ctrl" onclick="goBack()">Back</button>
-    <button id="btnToggle" class="ctrl" onclick="toggleScreen()">Fullscreen</button>
+    <!-- TOP CONTROLS -->
+    <div id="controls">
+      <button class="ctrl" onclick="goBack()">✕</button>
+      <button class="ctrl" id="btnToggle" onclick="toggleScreen()">⛶</button>
+    </div>
 
   </div>
 </div>
@@ -149,7 +167,7 @@ const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let videoURL = "";
 let isFullscreen = false;
 
-/* LOAD VIDEO INFO */
+/* LOAD VIDEO */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -158,18 +176,16 @@ let isFullscreen = false;
       title.textContent = d.video.title;
       videoURL = d.video.video_url;
       watchBtn.disabled = false;
-    }else{
-      title.textContent = "Video not found";
-    }
+    }else title.textContent="Video not found";
   }catch{
-    title.textContent = "Load error";
+    title.textContent="Load error";
   }
 })();
 
 /* WATCH */
 async function watch(){
-  watchBtn.disabled = true;
-  watchBtn.textContent = "Loading…";
+  watchBtn.disabled=true;
+  watchBtn.textContent="Loading…";
 
   preloadIframe();
   await showAdSafe(6000);
@@ -177,7 +193,7 @@ async function watch(){
 }
 
 function preloadIframe(){
-  loader.style.display = "flex";
+  loader.style.display="flex";
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(videoURL);
@@ -198,20 +214,19 @@ function showAdSafe(ms){
 
 /* OPEN PLAYER */
 function openPlayer(){
-  watchUI.style.display = "none";
-  player.style.display = "block";
-  isFullscreen = false;
-  btnToggle.textContent = "Fullscreen";
+  watchUI.style.display="none";
+  player.style.display="block";
+  exitFullscreen();
 }
 
-/* BACK / CLOSE */
+/* BACK */
 function goBack(){
   exitFullscreen();
-  playerFrame.src = "";
-  player.style.display = "none";
-  watchUI.style.display = "block";
-  watchBtn.disabled = false;
-  watchBtn.textContent = "Watch Video 🎬";
+  playerFrame.src="";
+  player.style.display="none";
+  watchUI.style.display="block";
+  watchBtn.disabled=false;
+  watchBtn.textContent="Watch Video 🎬";
 }
 
 /* FULLSCREEN TOGGLE */
@@ -226,15 +241,17 @@ function toggleScreen(){
 function enterFullscreen(){
   tg.requestFullscreen?.();
   tg.lockOrientation?.();
+  player.classList.add("fullscreen");
   isFullscreen = true;
-  btnToggle.textContent = "Normal";
+  btnToggle.textContent = "⤢"; // normal icon
 }
 
 function exitFullscreen(){
   tg.exitFullscreen?.();
   tg.unlockOrientation?.();
+  player.classList.remove("fullscreen");
   isFullscreen = false;
-  btnToggle.textContent = "Fullscreen";
+  btnToggle.textContent = "⛶"; // fullscreen icon
 }
 </script>
 
