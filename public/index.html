@@ -1,51 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 
-<title>Video Player</title>
+<title>Watcher Player</title>
 
-<!-- Telegram WebApp -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js?59"></script>
 
 <style>
+*{margin:0;padding:0;box-sizing:border-box}
 html,body{
-  margin:0;
-  padding:0;
   width:100%;
   height:100%;
   background:#000;
-  overflow:hidden;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ROOT PLAYER */
+/* INTRO */
+#intro{
+  position:fixed;
+  inset:0;
+  background:#f2f3f5;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+}
+#intro button{
+  padding:12px 24px;
+  border:none;
+  border-radius:10px;
+  background:#000;
+  color:#fff;
+  font-size:15px;
+}
+
+/* PLAYER */
 #player{
   position:fixed;
   inset:0;
   background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display:none;
 }
 
-/* VIDEO CONTAINER (NORMAL) */
+/* VIDEO BOX */
 #videoBox{
-  position:relative;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
   width:100%;
-  max-width:720px;
-  aspect-ratio:16/9;
+  max-width:420px;
+  aspect-ratio:9/16;
   background:#000;
-  transition:all .35s ease;
   overflow:hidden;
-  border-radius:12px;
+  border-radius:14px;
 }
-
-/* VIDEO CONTAINER (FULLSCREEN) */
 .fullscreen #videoBox{
+  top:56px;
+  left:0;
+  transform:none;
   width:100vw;
-  height:100vh;
+  height:calc(100vh - 56px);
   max-width:none;
   aspect-ratio:auto;
   border-radius:0;
@@ -55,178 +73,117 @@ html,body{
 #videoFrame{
   width:100%;
   height:100%;
-  border:0;
-  background:#000;
-  transform-origin:center center;
-  transition:transform .35s ease;
+  border:none;
+  transform-origin:center;
 }
+.normal #videoFrame{transform:scale(1.05)}
+.fullscreen #videoFrame{transform:rotate(90deg) scale(1.6)}
 
-/* NORMAL MODE */
-.normal #videoFrame{
-  transform:rotate(0deg) scale(1);
-}
-
-/* FULLSCREEN MODE – BIGGER */
-.fullscreen #videoFrame{
-  transform:rotate(90deg) scale(1.65);
-}
-
-/* ================= CONTROLS ================= */
-
-/* NORMAL MODE CONTROLS (on player) */
-.controls{
-  position:absolute;
-  top:8px;
-  left:8px;
-  right:8px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  z-index:50;
-}
-
-/* FULLSCREEN CONTROLS (screen edges) */
-.fs-controls{
-  display:none;
-}
-
-.fullscreen .controls{
-  display:none;
-}
-.fullscreen .fs-controls{
-  display:block;
-}
-
-/* BUTTONS */
+/* CONTROLS */
 .btn{
-  background:rgba(0,0,0,.6);
+  position:fixed;
+  padding:7px 14px;
+  border:none;
+  border-radius:999px;
+  background:rgba(0,0,0,.7);
   color:#fff;
-  border-radius:20px;
-  padding:6px 12px;
-  font-size:13px;
-  cursor:pointer;
-  user-select:none;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
+  font-size:14px;
+  font-weight:600;
+  z-index:10000;
 }
-
-/* FULLSCREEN BUTTON POSITIONS */
-#fsBack{
-  position:fixed;
-  top:60px;     /* below Telegram header */
-  left:16px;
-  z-index:100000;
-}
-#fsNormal{
-  position:fixed;
-  right:16px;
-  top:50%;
-  transform:translateY(-50%);
-  z-index:100000;
-}
+#btnClose{top:64px;left:16px}
+#btnMode{right:16px;top:50%;transform:translateY(-50%)}
 </style>
 </head>
 
 <body>
 
+<!-- INTRO -->
+<div id="intro">
+  <h2 id="title">Loading…</h2>
+  <button id="watchBtn" disabled>▶ Watch Video</button>
+</div>
+
+<!-- PLAYER -->
 <div id="player" class="normal">
-
   <div id="videoBox">
-
-    <!-- NORMAL MODE BUTTONS -->
-    <div class="controls">
-      <div class="btn" onclick="goBack()">⬅ Back</div>
-      <div class="btn" id="fsBtn" onclick="toggleFullscreen()">⛶ Fullscreen</div>
-    </div>
-
-    <!-- VIDEO -->
-    <iframe
-      id="videoFrame"
-      allowfullscreen
-      allow="autoplay; fullscreen"
-    ></iframe>
-
+    <iframe id="videoFrame" allow="autoplay; fullscreen"></iframe>
   </div>
 
-  <!-- FULLSCREEN MODE BUTTONS -->
-  <div class="fs-controls">
-    <div id="fsBack" class="btn" onclick="goBack()">✕ Close</div>
-    <div id="fsNormal" class="btn" onclick="toggleFullscreen()">⟳ Normal</div>
-  </div>
-
+  <button id="btnClose" class="btn">✕ Close</button>
+  <button id="btnMode" class="btn">⛶ Fullscreen</button>
 </div>
 
 <script>
-const tg = window.Telegram?.WebApp;
-if(tg){
-  tg.ready();
-  tg.expand();
-}
+const tg = Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-const params = new URLSearchParams(location.search);
-const videoUrl = params.get("url");
+/* ===== CONFIG ===== */
+const API = "https://watch-two-rho.vercel.app/api/get-video";
+const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 
-const frame = document.getElementById("videoFrame");
+/* ===== ELEMENTS ===== */
+const intro = document.getElementById("intro");
+const title = document.getElementById("title");
+const watchBtn = document.getElementById("watchBtn");
 const player = document.getElementById("player");
-const fsBtn  = document.getElementById("fsBtn");
+const iframe = document.getElementById("videoFrame");
+const btnMode = document.getElementById("btnMode");
+const btnClose = document.getElementById("btnClose");
 
-if(!videoUrl){
-  alert("No video URL provided");
-}else{
-  frame.src = "https://playterabox.com/embed/player?url=" + encodeURIComponent(videoUrl);
-}
+let videoURL = "";
 
-/* FULLSCREEN TOGGLE */
-function toggleFullscreen(){
-  if(player.classList.contains("fullscreen")){
-    exitFullscreen();
-  }else{
-    enterFullscreen();
-  }
-}
+/* ===== LOAD VIDEO FROM API ===== */
+(async ()=>{
+  try{
+    const res = await fetch(`${API}?video_id=${videoId}`);
+    const data = await res.json();
 
-function enterFullscreen(){
-  player.classList.remove("normal");
-  player.classList.add("fullscreen");
-  fsBtn.innerHTML = "⤢ Normal";
-
-  if(tg?.requestFullscreen){
-    tg.requestFullscreen();
-  }
-}
-
-function exitFullscreen(){
-  player.classList.remove("fullscreen");
-  player.classList.add("normal");
-  fsBtn.innerHTML = "⛶ Fullscreen";
-
-  if(tg?.exitFullscreen){
-    tg.exitFullscreen();
-  }
-}
-
-/* BACK */
-function goBack(){
-  if(player.classList.contains("fullscreen")){
-    exitFullscreen();
-  }else{
-    if(tg){
-      tg.close();
+    if(data.success && data.video?.video_url){
+      title.textContent = data.video.title || "Ready to watch";
+      videoURL = data.video.video_url;
+      watchBtn.disabled = false;
     }else{
-      history.back();
+      title.textContent = "Video not found";
     }
+  }catch{
+    title.textContent = "Failed to load video";
   }
-}
+})();
 
-/* OPTIONAL: auto-sync with device rotation */
-window.addEventListener("orientationchange",()=>{
-  if(Math.abs(window.orientation) === 90){
-    enterFullscreen();
+/* ===== START ===== */
+watchBtn.onclick = ()=>{
+  iframe.src =
+    "https://playterabox.com/embed/player?url=" +
+    encodeURIComponent(videoURL);
+
+  intro.style.display = "none";
+  player.style.display = "block";
+};
+
+/* ===== FULLSCREEN ===== */
+btnMode.onclick = ()=>{
+  if(player.classList.contains("fullscreen")){
+    tg.exitFullscreen?.();
+    tg.unlockOrientation?.();
+    player.classList.remove("fullscreen");
+    player.classList.add("normal");
+    btnMode.textContent = "⛶ Fullscreen";
   }else{
-    exitFullscreen();
+    tg.requestFullscreen?.();
+    tg.lockOrientation?.();
+    player.classList.remove("normal");
+    player.classList.add("fullscreen");
+    btnMode.textContent = "⟳ Normal";
   }
-});
+};
+
+/* ===== CLOSE ===== */
+btnClose.onclick = ()=>{
+  tg.exitFullscreen?.();
+  tg.close();
+};
 </script>
 
 </body>
