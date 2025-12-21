@@ -23,27 +23,36 @@ html,body{
   height:100%;
   background:#f2f3f5;
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+  overflow:hidden;
 }
 
 /* ---------- UI CARD ---------- */
 #ui{
-  padding:16px;
+  padding:10px; /* reduced */
 }
 .card{
   max-width:520px;
   margin:auto;
   background:#111;
   color:#fff;
-  padding:18px;
-  border-radius:16px;
+  padding:12px; /* reduced */
+  border-radius:14px;
   text-align:center;
 }
-.card h2{margin-bottom:8px}
-.card p{opacity:.7;margin-bottom:14px}
+.card h2{
+  font-size:16px;     /* smaller title */
+  margin-bottom:4px; /* less height */
+  line-height:1.2;
+}
+.card p{
+  font-size:12px;
+  opacity:.65;
+  margin-bottom:8px;
+}
 .card button{
   width:100%;
-  padding:14px;
-  font-size:16px;
+  padding:12px;
+  font-size:15px;
   font-weight:700;
   border:none;
   border-radius:12px;
@@ -63,26 +72,26 @@ html,body{
 .ctrl-btn{
   position:fixed;
   z-index:1000000;
-  padding:8px 10px;
+  padding:7px 10px;
   border:none;
   border-radius:999px;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.55);
   color:#fff;
-  font-size:14px;
+  font-size:13px;
   font-weight:600;
   backdrop-filter:blur(6px);
 }
 
-/* back button (small, no border bar) */
+/* back button */
 #backBtn{
-  top:12px;
-  left:12px;
+  top:8px;
+  left:8px;
 }
 
-/* rotate button */
+/* rotate/fullscreen button */
 #rotateBtn{
-  top:12px;
-  right:12px;
+  top:8px;
+  right:8px;
 }
 
 /* iframe wrapper */
@@ -92,16 +101,16 @@ html,body{
   overflow:hidden;
 }
 
-/* NORMAL MODE (small zoom) */
+/* NORMAL MODE (slight zoom) */
 #frame-wrap iframe{
   width:100%;
   height:100%;
   border:none;
-  transform:scale(1.06);
+  transform:scale(1.05); /* small zoom */
   transition:transform .35s ease;
 }
 
-/* ROTATE MODE (less zoom) */
+/* ROTATE MODE (landscape + less zoom) */
 body.rotate #frame-wrap iframe{
   width:100vh;
   height:100vw;
@@ -131,7 +140,7 @@ body.rotate #frame-wrap iframe{
 <!-- PLAYER -->
 <div id="player">
   <button id="backBtn" class="ctrl-btn" onclick="goBack()">←</button>
-  <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⟳</button>
+  <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⛶ Fullscreen</button>
 
   <div id="frame-wrap">
     <iframe id="playerFrame" allow="autoplay"></iframe>
@@ -205,6 +214,7 @@ function openPlayer(){
 
 function goBack(){
   document.body.classList.remove("rotate");
+  rotateBtn.textContent = "⛶ Fullscreen";
 
   player.style.display="none";
   playerFrame.src="";
@@ -214,9 +224,10 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* ---------- ROTATE ---------- */
+/* ---------- ROTATE TOGGLE ---------- */
 function toggleRotate(){
-  document.body.classList.toggle("rotate");
+  const isRotated = document.body.classList.toggle("rotate");
+  rotateBtn.textContent = isRotated ? "⟳ Normal" : "⛶ Fullscreen";
 }
 </script>
 
