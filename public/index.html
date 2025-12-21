@@ -1,23 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport"
-  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Watch Video</title>
 
+<!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
+
+<!-- Monetag -->
+<script src="//libtl.com/sdk.js"
+        data-zone="9981288"
+        data-sdk="show_9981288"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+
+html,body{
+  width:100%;
+  height:100%;
   background:#f2f3f5;
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* MAIN UI */
+/* ---------- UI CARD ---------- */
 #ui{
   padding:16px;
 }
@@ -26,188 +34,190 @@ body{
   margin:auto;
   background:#111;
   color:#fff;
-  padding:16px;
-  border-radius:14px;
+  padding:18px;
+  border-radius:16px;
   text-align:center;
 }
-button{
+.card h2{
+  margin-bottom:8px;
+}
+.card p{
+  opacity:.7;
+  margin-bottom:14px;
+}
+.card button{
   width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  font-size:15px;
+  padding:14px;
+  font-size:16px;
   font-weight:700;
-  cursor:pointer;
-  background:#20b2aa;
-}
-
-/* PLAYER AREA */
-#player-area{
-  display:none;
-  max-width:100%;
-  padding:10px;
-}
-#iframe-wrap{
-  position:relative;
-  width:100%;
-  height:240px;
-  background:#000;
-  border-radius:12px;
-  overflow:hidden;
-}
-#iframe-wrap iframe{
-  width:100%;
-  height:100%;
   border:none;
+  border-radius:12px;
+  background:#22b8b0;
+  cursor:pointer;
+}
+.card button:disabled{
+  opacity:.6;
 }
 
-/* CONTROLS */
-.ctrls{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-.ctrls button{
-  flex:1;
-}
-
-/* LARGE MODE */
-body.large #ui{display:none}
-body.large #player-area{
-  display:block;
+/* ---------- PLAYER ---------- */
+#player{
+  display:none;
   position:fixed;
   inset:0;
   background:#000;
   z-index:999999;
 }
-body.large #iframe-wrap{
+
+/* iframe container */
+#frame-wrap{
   width:100vw;
   height:100vh;
-  border-radius:0;
+  overflow:hidden;
 }
-body.large #iframe-wrap iframe{
+#frame-wrap iframe{
   width:100vw;
   height:100vh;
-  transform:scale(1.15); /* KEY PART */
-  transform-origin:center center;
+  border:none;
+  transform:scale(1.12);   /* IMPORTANT: makes video bigger */
+  transform-origin:center;
 }
 
-/* TOP BAR */
-#top-bar{
-  display:none;
-}
-body.large #top-bar{
-  display:flex;
+/* top bar */
+#topbar{
   position:fixed;
   top:0;
   left:0;
   right:0;
   height:48px;
   background:#fff;
-  z-index:1000000;
+  display:flex;
   align-items:center;
   padding:0 12px;
+  z-index:1000000;
 }
-#top-bar button{
+#topbar button{
   background:none;
-  color:#000;
-  font-weight:700;
+  border:none;
   font-size:16px;
+  font-weight:700;
 }
 </style>
 </head>
 
 <body>
 
+<!-- UI -->
 <div id="ui">
   <div class="card">
     <h2 id="title">Loading…</h2>
-    <p style="opacity:.7;margin:8px 0">Watch ad to unlock video</p>
+    <p>Watch ad to unlock video</p>
     <button id="watchBtn" onclick="watch()">Watch Video 🎬</button>
   </div>
 </div>
 
-<div id="player-area">
-  <div id="iframe-wrap">
-    <iframe id="playerFrame" allow="autoplay"></iframe>
-  </div>
-
-  <div class="ctrls">
-    <button onclick="goLarge()">⤢ Enlarge</button>
+<!-- PLAYER -->
+<div id="player">
+  <div id="topbar">
     <button onclick="goBack()">← Back</button>
   </div>
-</div>
-
-<div id="top-bar">
-  <button onclick="goBack()">← Back</button>
+  <div id="frame-wrap">
+    <iframe id="playerFrame" allow="autoplay"></iframe>
+  </div>
 </div>
 
 <script>
+/* ---------- TELEGRAM ---------- */
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
+/* ---------- CONFIG ---------- */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let shareURL = "";
 
-/* LOAD TITLE */
+/* ---------- LOAD TITLE FAST ---------- */
 (async ()=>{
-  const r = await fetch(`${API}?video_id=${videoId}`);
-  const d = await r.json();
-  if(d.success){
-    title.textContent = d.video.title;
-    shareURL = d.video.video_url;
-  }else{
-    title.textContent = "Video not found";
+  try{
+    const r = await fetch(`${API}?video_id=${videoId}`);
+    const d = await r.json();
+    if(d.success && d.video){
+      document.getElementById("title").textContent =
+        d.video.title || "Watch Video";
+      shareURL = d.video.video_url;
+    }else{
+      document.getElementById("title").textContent = "Video not found";
+    }
+  }catch{
+    document.getElementById("title").textContent = "Error loading video";
   }
 })();
 
-/* WATCH */
+/* ---------- WATCH FLOW ---------- */
 async function watch(){
-  watchBtn.disabled = true;
+  const btn = document.getElementById("watchBtn");
+  btn.disabled = true;
+  btn.textContent = "Loading...";
 
-  await showAdSafe();
+  // 1️⃣ Try showing ad (never block)
+  await showAdSafe(6000);
 
-  playerFrame.src =
+  // 2️⃣ Always open video
+  openPlayer();
+}
+
+/* ---------- SAFE AD (NO STUCK EVER) ---------- */
+function showAdSafe(timeout=6000){
+  return new Promise(resolve=>{
+    let done=false;
+
+    function finish(reason){
+      if(done) return;
+      done=true;
+      console.log("Ad finished:", reason);
+      resolve();
+    }
+
+    const t = setTimeout(()=>finish("timeout"), timeout);
+
+    try{
+      show_9981288({
+        onRewarded:()=>{clearTimeout(t);finish("rewarded");},
+        onClose:()=>{clearTimeout(t);finish("closed");},
+        onError:()=>{clearTimeout(t);finish("error");}
+      });
+    }catch{
+      clearTimeout(t);
+      finish("exception");
+    }
+  });
+}
+
+/* ---------- PLAYER CONTROL ---------- */
+function openPlayer(){
+  document.getElementById("ui").style.display="none";
+
+  const frame = document.getElementById("playerFrame");
+  frame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(shareURL);
 
-  ui.style.display = "none";
-  player-area.style.display = "block";
-}
+  document.getElementById("player").style.display="block";
 
-/* LARGE MODE */
-function goLarge(){
-  document.body.classList.add("large");
+  // force landscape if possible
   screen.orientation?.lock("landscape").catch(()=>{});
 }
 
-/* BACK */
 function goBack(){
-  document.body.classList.remove("large");
-  player-area.style.display = "none";
-  ui.style.display = "block";
-  playerFrame.src = "";
-  watchBtn.disabled = false;
-  screen.orientation?.unlock?.();
-}
+  document.getElementById("player").style.display="none";
+  document.getElementById("playerFrame").src="";
+  document.getElementById("ui").style.display="block";
 
-/* AD SAFE */
-function showAdSafe(t=8000){
-  return new Promise(r=>{
-    let d=false;
-    const to=setTimeout(()=>{if(!d){d=true;r()}},t);
-    try{
-      show_9981288({
-        onRewarded:()=>{if(d)return;d=true;clearTimeout(to);r()},
-        onClose:()=>{if(d)return;d=true;clearTimeout(to);r()},
-        onError:()=>{if(d)return;d=true;clearTimeout(to);r()}
-      });
-    }catch{
-      clearTimeout(to);r();
-    }
-  });
+  const btn = document.getElementById("watchBtn");
+  btn.disabled = false;
+  btn.textContent = "Watch Video 🎬";
+
+  screen.orientation?.unlock?.();
 }
 </script>
 
