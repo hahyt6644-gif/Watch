@@ -7,11 +7,15 @@
 
 <title>Watch Video</title>
 
+<!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+
+<!-- Ad SDK -->
 <script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+
 html,body{
   width:100%;
   height:100%;
@@ -25,6 +29,7 @@ html,body{
   padding:16px;
   background:#f2f3f5;
 }
+
 .card{
   max-width:520px;
   margin:auto;
@@ -34,8 +39,10 @@ html,body{
   border-radius:14px;
   text-align:center;
 }
+
 .card h2{font-size:15px;margin-bottom:6px}
 .card p{font-size:12px;opacity:.65;margin-bottom:12px}
+
 .card button{
   width:100%;
   padding:12px;
@@ -56,27 +63,22 @@ html,body{
   z-index:999999;
 }
 
-/* PLAYER BOX (NORMAL) */
+/* PLAYER BOX */
 #playerBox{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
+  position:relative;
   width:100%;
   max-width:420px;
   aspect-ratio:9/16;
+  margin:auto;
   background:#000;
   border-radius:12px;
   overflow:hidden;
 }
 
-/* PLAYER BOX (FULLSCREEN) */
+/* FULLSCREEN MODE */
 #player.fullscreen #playerBox{
-  top:56px; /* Telegram header space */
-  left:0;
-  transform:none;
   width:100vw;
-  height:calc(100vh - 56px);
+  height:100vh;
   max-width:none;
   aspect-ratio:auto;
   border-radius:0;
@@ -88,36 +90,31 @@ html,body{
   height:100%;
   border:none;
   background:#000;
-  transform-origin:center center;
 }
 
-/* normal */
-#player.normal #playerFrame{
-  transform:scale(1.03);
-}
-
-/* fullscreen */
+/* Rotate video in fullscreen */
 #player.fullscreen #playerFrame{
-  transform:rotate(90deg) scale(1.45);
+  transform:rotate(90deg) scale(1.35);
+  transform-origin:center;
 }
 
-/* ---------- CONTROLS ---------- */
+/* ---------- CONTROLS (INSIDE VIDEO) ---------- */
 .ctrl{
-  position:fixed;
-  top:12px;
+  position:absolute;
+  top:10px;
   padding:6px 10px;
   border:none;
   border-radius:999px;
   background:rgba(0,0,0,.65);
   color:#fff;
-  font-size:13px;
-  z-index:1000000;
+  font-size:14px;
+  z-index:20;
 }
 
-#btnBack{left:12px}
-#btnToggle{right:12px}
+#btnBack{left:10px}
+#btnToggle{right:10px}
 
-/* LOADER */
+/* ---------- LOADER ---------- */
 #loader{
   position:absolute;
   inset:0;
@@ -127,14 +124,14 @@ html,body{
   background:#000;
   color:#fff;
   font-size:14px;
-  z-index:5;
+  z-index:10;
 }
 </style>
 </head>
 
 <body>
 
-<!-- WATCH -->
+<!-- WATCH SCREEN -->
 <div id="watchUI">
   <div class="card">
     <h2 id="title">Loading…</h2>
@@ -146,13 +143,16 @@ html,body{
 <!-- PLAYER -->
 <div id="player" class="normal">
   <div id="playerBox">
-    <div id="loader">Loading video…</div>
-    <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
-  </div>
 
-  <!-- CONTROLS -->
-  <button id="btnBack" class="ctrl" onclick="goBack()">✕ Close</button>
-  <button id="btnToggle" class="ctrl" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+    <div id="loader">Loading video…</div>
+
+    <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
+
+    <!-- CONTROLS OVER VIDEO -->
+    <button id="btnBack" class="ctrl" onclick="goBack()">✕</button>
+    <button id="btnToggle" class="ctrl" onclick="toggleFullscreen()">⛶</button>
+
+  </div>
 </div>
 
 <script>
@@ -162,9 +162,10 @@ tg.expand();
 
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
+
 let videoURL = "";
 
-/* LOAD VIDEO */
+/* LOAD VIDEO INFO */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -173,21 +174,25 @@ let videoURL = "";
       title.textContent = d.video.title;
       videoURL = d.video.video_url;
       watchBtn.disabled = false;
-    }else title.textContent="Video not found";
+    }else{
+      title.textContent = "Video not found";
+    }
   }catch{
-    title.textContent="Load error";
+    title.textContent = "Load error";
   }
 })();
 
+/* WATCH FLOW */
 async function watch(){
-  watchBtn.disabled=true;
-  watchBtn.textContent="Loading…";
+  watchBtn.disabled = true;
+  watchBtn.textContent = "Loading…";
 
   preloadIframe();
   await showAdSafe(6000);
   openPlayer();
 }
 
+/* PRELOAD VIDEO */
 function preloadIframe(){
   loader.style.display="flex";
   playerFrame.src =
@@ -197,6 +202,7 @@ function preloadIframe(){
   setTimeout(()=>loader.style.display="none",1200);
 }
 
+/* SAFE AD */
 function showAdSafe(ms){
   return new Promise(res=>{
     let done=false;
@@ -208,13 +214,15 @@ function showAdSafe(ms){
   });
 }
 
+/* OPEN PLAYER */
 function openPlayer(){
   watchUI.style.display="none";
-  player.style.display="block";
-  player.className="normal";
-  btnToggle.textContent="⛶ Fullscreen";
+  player.style.display="flex";
+  player.classList.remove("fullscreen");
+  btnToggle.textContent="⛶";
 }
 
+/* CLOSE PLAYER */
 function goBack(){
   exitFullscreen();
   playerFrame.src="";
@@ -224,6 +232,7 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
+/* FULLSCREEN TOGGLE */
 function toggleFullscreen(){
   if(player.classList.contains("fullscreen")){
     exitFullscreen();
@@ -236,14 +245,14 @@ function enterFullscreen(){
   tg.requestFullscreen?.();
   tg.lockOrientation?.();
   player.classList.add("fullscreen");
-  btnToggle.textContent="⟳ Normal";
+  btnToggle.textContent="⟳";
 }
 
 function exitFullscreen(){
   tg.exitFullscreen?.();
   tg.unlockOrientation?.();
   player.classList.remove("fullscreen");
-  btnToggle.textContent="⛶ Fullscreen";
+  btnToggle.textContent="⛶";
 }
 </script>
 
