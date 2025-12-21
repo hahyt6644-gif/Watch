@@ -1,229 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>Watch Video</title>
+<title>Video Player</title>
 
-<script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-<script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
+<!-- Telegram WebApp -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
 html,body{
+  margin:0;
+  padding:0;
   width:100%;
   height:100%;
   background:#000;
   overflow:hidden;
-  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
-/* ---------- WATCH UI ---------- */
-#watchUI{
-  padding:16px;
-  background:#f2f3f5;
-}
-.card{
-  max-width:520px;
-  margin:auto;
-  background:#111;
-  color:#fff;
-  padding:16px;
-  border-radius:14px;
-  text-align:center;
-}
-.card h2{font-size:15px;margin-bottom:6px}
-.card p{font-size:12px;opacity:.65;margin-bottom:12px}
-.card button{
-  width:100%;
-  padding:12px;
-  font-size:15px;
-  font-weight:700;
-  border:none;
-  border-radius:12px;
-  background:#22b8b0;
-  color:#000;
-}
-
-/* ---------- PLAYER ---------- */
+/* ROOT PLAYER */
 #player{
-  display:none;
   position:fixed;
   inset:0;
   background:#000;
-  z-index:999999;
-}
-
-/* PLAYER BOX (NORMAL) */
-#playerBox{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  width:100%;
-  max-width:420px;
-  aspect-ratio:9/16;
-  background:#000;
-  border-radius:12px;
-  overflow:hidden;
-}
-
-/* PLAYER BOX (FULLSCREEN) */
-#player.fullscreen #playerBox{
-  top:56px; /* Telegram header space */
-  left:0;
-  transform:none;
-  width:100vw;
-  height:calc(100vh - 56px);
-  max-width:none;
-  aspect-ratio:auto;
-  border-radius:0;
-}
-
-/* ---------- IFRAME ---------- */
-#playerFrame{
-  width:100%;
-  height:100%;
-  border:none;
-  background:#000;
-  transform-origin:center center;
-}
-
-/* normal */
-#player.normal #playerFrame{
-  transform:scale(1.03);
-}
-
-/* fullscreen */
-#player.fullscreen #playerFrame{
-  transform:rotate(90deg) scale(1.45);
-}
-
-/* ---------- CONTROLS ---------- */
-.ctrl{
-  position:fixed;
-  top:12px;
-  padding:6px 10px;
-  border:none;
-  border-radius:999px;
-  background:rgba(0,0,0,.65);
-  color:#fff;
-  font-size:13px;
-  z-index:1000000;
-}
-
-#btnBack{left:12px}
-#btnToggle{right:12px}
-
-/* LOADER */
-#loader{
-  position:absolute;
-  inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
+}
+
+/* VIDEO CONTAINER */
+#videoBox{
+  position:relative;
+  width:100%;
+  max-width:720px;
+  aspect-ratio:16/9;
   background:#000;
+  transition:all .35s ease;
+}
+
+/* IFRAME */
+#videoFrame{
+  width:100%;
+  height:100%;
+  border:0;
+  background:#000;
+  transform-origin:center center;
+  transition:transform .35s ease;
+}
+
+/* TOP CONTROLS */
+.controls{
+  position:absolute;
+  top:8px;
+  left:8px;
+  right:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:50;
+  pointer-events:none;
+}
+
+/* BUTTONS */
+.btn{
+  pointer-events:auto;
+  background:rgba(0,0,0,.6);
   color:#fff;
-  font-size:14px;
-  z-index:5;
+  border-radius:20px;
+  padding:6px 12px;
+  font-size:13px;
+  cursor:pointer;
+  user-select:none;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.btn:hover{ background:rgba(0,0,0,.85); }
+
+/* FULLSCREEN MODE */
+.fullscreen #videoBox{
+  width:100vh;
+  height:100vw;
+  max-width:none;
+  max-height:none;
+}
+
+.fullscreen #videoFrame{
+  transform:rotate(90deg) scale(1.6);
+}
+
+/* NORMAL MODE */
+.normal #videoFrame{
+  transform:rotate(0deg) scale(1);
 }
 </style>
 </head>
 
 <body>
 
-<!-- WATCH -->
-<div id="watchUI">
-  <div class="card">
-    <h2 id="title">Loading…</h2>
-    <p>Watch ad to unlock video</p>
-    <button id="watchBtn" disabled onclick="watch()">Watch Video 🎬</button>
-  </div>
-</div>
-
-<!-- PLAYER -->
 <div id="player" class="normal">
-  <div id="playerBox">
-    <div id="loader">Loading video…</div>
-    <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
-  </div>
 
-  <!-- CONTROLS -->
-  <button id="btnBack" class="ctrl" onclick="goBack()">✕ Close</button>
-  <button id="btnToggle" class="ctrl" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <div id="videoBox">
+
+    <!-- TOP BUTTONS -->
+    <div class="controls">
+      <div class="btn" onclick="goBack()">⬅ Back</div>
+      <div class="btn" id="fsBtn" onclick="toggleFullscreen()">⛶ Fullscreen</div>
+    </div>
+
+    <!-- VIDEO -->
+    <iframe
+      id="videoFrame"
+      allowfullscreen
+      allow="autoplay; fullscreen"
+    ></iframe>
+
+  </div>
 </div>
 
 <script>
-const tg = Telegram.WebApp;
-tg.ready();
-tg.expand();
-
-const API = "https://watch-two-rho.vercel.app/api/get-video";
-const videoId = tg.initDataUnsafe?.start_param || "vid_test";
-let videoURL = "";
-
-/* LOAD VIDEO */
-(async ()=>{
-  try{
-    const r = await fetch(`${API}?video_id=${videoId}`);
-    const d = await r.json();
-    if(d.success && d.video?.video_url){
-      title.textContent = d.video.title;
-      videoURL = d.video.video_url;
-      watchBtn.disabled = false;
-    }else title.textContent="Video not found";
-  }catch{
-    title.textContent="Load error";
-  }
-})();
-
-async function watch(){
-  watchBtn.disabled=true;
-  watchBtn.textContent="Loading…";
-
-  preloadIframe();
-  await showAdSafe(6000);
-  openPlayer();
+const tg = window.Telegram?.WebApp;
+if(tg){
+  tg.ready();
+  tg.expand();
 }
 
-function preloadIframe(){
-  loader.style.display="flex";
-  playerFrame.src =
-    "https://playterabox.com/embed/player?url=" +
-    encodeURIComponent(videoURL);
+const params = new URLSearchParams(location.search);
+const videoUrl = params.get("url");
 
-  setTimeout(()=>loader.style.display="none",1200);
+const frame = document.getElementById("videoFrame");
+const player = document.getElementById("player");
+const fsBtn  = document.getElementById("fsBtn");
+
+if(!videoUrl){
+  alert("No video URL provided");
+}else{
+  frame.src = "https://playterabox.com/embed/player?url=" + encodeURIComponent(videoUrl);
 }
 
-function showAdSafe(ms){
-  return new Promise(res=>{
-    let done=false;
-    const end=()=>{if(!done){done=true;res()}};
-    setTimeout(end,ms);
-    try{
-      show_9981288({onRewarded:end,onClose:end,onError:end});
-    }catch{end()}
-  });
-}
-
-function openPlayer(){
-  watchUI.style.display="none";
-  player.style.display="block";
-  player.className="normal";
-  btnToggle.textContent="⛶ Fullscreen";
-}
-
-function goBack(){
-  exitFullscreen();
-  playerFrame.src="";
-  player.style.display="none";
-  watchUI.style.display="block";
-  watchBtn.disabled=false;
-  watchBtn.textContent="Watch Video 🎬";
-}
-
+/* FULLSCREEN TOGGLE */
 function toggleFullscreen(){
   if(player.classList.contains("fullscreen")){
     exitFullscreen();
@@ -233,18 +151,46 @@ function toggleFullscreen(){
 }
 
 function enterFullscreen(){
-  tg.requestFullscreen?.();
-  tg.lockOrientation?.();
+  player.classList.remove("normal");
   player.classList.add("fullscreen");
-  btnToggle.textContent="⟳ Normal";
+  fsBtn.innerHTML = "⤢ Normal";
+
+  if(tg?.requestFullscreen){
+    tg.requestFullscreen();
+  }
 }
 
 function exitFullscreen(){
-  tg.exitFullscreen?.();
-  tg.unlockOrientation?.();
   player.classList.remove("fullscreen");
-  btnToggle.textContent="⛶ Fullscreen";
+  player.classList.add("normal");
+  fsBtn.innerHTML = "⛶ Fullscreen";
+
+  if(tg?.exitFullscreen){
+    tg.exitFullscreen();
+  }
 }
+
+/* BACK */
+function goBack(){
+  if(player.classList.contains("fullscreen")){
+    exitFullscreen();
+  }else{
+    if(tg){
+      tg.close();
+    }else{
+      history.back();
+    }
+  }
+}
+
+/* AUTO SYNC IF USER ROTATES DEVICE */
+window.addEventListener("orientationchange",()=>{
+  if(Math.abs(window.orientation) === 90){
+    enterFullscreen();
+  }else{
+    exitFullscreen();
+  }
+});
 </script>
 
 </body>
