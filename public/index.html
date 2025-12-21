@@ -3,14 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Watch Video</title>
 
-<!-- Telegram WebApp -->
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-
-<!-- Ad SDK -->
 <script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
 
 <style>
@@ -54,7 +51,7 @@ html,body{
   color:#000;
 }
 
-/* ---------- PLAYER ---------- */
+/* ---------- PLAYER (RED BOX AREA) ---------- */
 #player{
   display:none;
   position:fixed;
@@ -63,25 +60,11 @@ html,body{
   z-index:999999;
 }
 
-/* PLAYER BOX */
+/* FULL IFRAME AREA */
 #playerBox{
-  position:relative;
-  width:100%;
-  max-width:420px;
-  aspect-ratio:9/16;
-  margin:auto;
+  position:absolute;
+  inset:0;
   background:#000;
-  border-radius:12px;
-  overflow:hidden;
-}
-
-/* FULLSCREEN MODE */
-#player.fullscreen #playerBox{
-  width:100vw;
-  height:100vh;
-  max-width:none;
-  aspect-ratio:auto;
-  border-radius:0;
 }
 
 /* ---------- IFRAME ---------- */
@@ -92,27 +75,29 @@ html,body{
   background:#000;
 }
 
-/* Rotate video in fullscreen */
-#player.fullscreen #playerFrame{
-  transform:rotate(90deg) scale(1.35);
-  transform-origin:center;
-}
-
-/* ---------- CONTROLS (INSIDE VIDEO) ---------- */
+/* ---------- CONTROLS ---------- */
 .ctrl{
   position:absolute;
-  top:10px;
-  padding:6px 10px;
+  padding:6px 12px;
   border:none;
-  border-radius:999px;
-  background:rgba(0,0,0,.65);
+  border-radius:6px;
+  background:rgba(0,0,0,.6);
   color:#fff;
   font-size:14px;
-  z-index:20;
+  z-index:10;
 }
 
-#btnBack{left:10px}
-#btnToggle{right:10px}
+/* Back button (TOP RIGHT) */
+#btnBack{
+  top:12px;
+  right:12px;
+}
+
+/* Normal button (BOTTOM RIGHT) */
+#btnToggle{
+  bottom:12px;
+  right:12px;
+}
 
 /* ---------- LOADER ---------- */
 #loader{
@@ -124,14 +109,14 @@ html,body{
   background:#000;
   color:#fff;
   font-size:14px;
-  z-index:10;
+  z-index:5;
 }
 </style>
 </head>
 
 <body>
 
-<!-- WATCH SCREEN -->
+<!-- WATCH UI -->
 <div id="watchUI">
   <div class="card">
     <h2 id="title">Loading…</h2>
@@ -141,16 +126,16 @@ html,body{
 </div>
 
 <!-- PLAYER -->
-<div id="player" class="normal">
+<div id="player">
   <div id="playerBox">
 
     <div id="loader">Loading video…</div>
 
     <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
 
-    <!-- CONTROLS OVER VIDEO -->
-    <button id="btnBack" class="ctrl" onclick="goBack()">✕</button>
-    <button id="btnToggle" class="ctrl" onclick="toggleFullscreen()">⛶</button>
+    <!-- CONTROLS -->
+    <button id="btnBack" class="ctrl" onclick="goBack()">Back</button>
+    <button id="btnToggle" class="ctrl" onclick="toggleNormal()">Normal</button>
 
   </div>
 </div>
@@ -165,7 +150,7 @@ const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 
 let videoURL = "";
 
-/* LOAD VIDEO INFO */
+/* LOAD VIDEO */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -184,15 +169,14 @@ let videoURL = "";
 
 /* WATCH FLOW */
 async function watch(){
-  watchBtn.disabled = true;
-  watchBtn.textContent = "Loading…";
+  watchBtn.disabled=true;
+  watchBtn.textContent="Loading…";
 
   preloadIframe();
   await showAdSafe(6000);
   openPlayer();
 }
 
-/* PRELOAD VIDEO */
 function preloadIframe(){
   loader.style.display="flex";
   playerFrame.src =
@@ -202,7 +186,6 @@ function preloadIframe(){
   setTimeout(()=>loader.style.display="none",1200);
 }
 
-/* SAFE AD */
 function showAdSafe(ms){
   return new Promise(res=>{
     let done=false;
@@ -217,14 +200,11 @@ function showAdSafe(ms){
 /* OPEN PLAYER */
 function openPlayer(){
   watchUI.style.display="none";
-  player.style.display="flex";
-  player.classList.remove("fullscreen");
-  btnToggle.textContent="⛶";
+  player.style.display="block";
 }
 
 /* CLOSE PLAYER */
 function goBack(){
-  exitFullscreen();
   playerFrame.src="";
   player.style.display="none";
   watchUI.style.display="block";
@@ -232,27 +212,9 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* FULLSCREEN TOGGLE */
-function toggleFullscreen(){
-  if(player.classList.contains("fullscreen")){
-    exitFullscreen();
-  }else{
-    enterFullscreen();
-  }
-}
-
-function enterFullscreen(){
-  tg.requestFullscreen?.();
-  tg.lockOrientation?.();
-  player.classList.add("fullscreen");
-  btnToggle.textContent="⟳";
-}
-
-function exitFullscreen(){
-  tg.exitFullscreen?.();
-  tg.unlockOrientation?.();
-  player.classList.remove("fullscreen");
-  btnToggle.textContent="⛶";
+/* NORMAL BUTTON (just closes fullscreen player) */
+function toggleNormal(){
+  goBack();
 }
 </script>
 
