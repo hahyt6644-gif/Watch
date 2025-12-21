@@ -16,7 +16,7 @@
 html,body{
   width:100%;
   height:100%;
-  background:#f2f3f5;
+  background:#000;
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
   overflow:hidden;
 }
@@ -24,6 +24,7 @@ html,body{
 /* ---------- UI ---------- */
 #ui{
   padding:10px;
+  background:#f2f3f5;
 }
 .card{
   max-width:520px;
@@ -34,8 +35,15 @@ html,body{
   border-radius:14px;
   text-align:center;
 }
-.card h2{font-size:16px;margin-bottom:4px}
-.card p{font-size:12px;opacity:.65;margin-bottom:8px}
+.card h2{
+  font-size:16px;
+  margin-bottom:4px;
+}
+.card p{
+  font-size:12px;
+  opacity:.65;
+  margin-bottom:8px;
+}
 .card button{
   width:100%;
   padding:12px;
@@ -55,20 +63,11 @@ html,body{
   z-index:999999;
 }
 
-/* ✅ BUTTON LAYER (NOT ROTATED) */
-#controls{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:0;
-  z-index:1000000;
-  pointer-events:none; /* let iframe get touch */
-}
-
+/* CONTROLS (FIXED TO VIEWPORT) */
 .ctrl-btn{
   position:fixed;
   top:10px;
+  z-index:1000000;
   padding:7px 10px;
   border:none;
   border-radius:999px;
@@ -77,36 +76,33 @@ html,body{
   font-size:13px;
   font-weight:600;
   backdrop-filter:blur(6px);
-  pointer-events:auto;
 }
-
-/* exact positions – SAME in all modes */
 #backBtn{ left:10px; }
 #rotateBtn{ right:10px; }
 
-/* ---------- VIDEO FRAME ---------- */
+/* VIDEO CONTAINER */
 #frame-wrap{
   position:absolute;
   inset:0;
   overflow:hidden;
 }
 
-/* NORMAL */
+/* NORMAL MODE (very light zoom) */
 #frame-wrap iframe{
   width:100%;
   height:100%;
   border:none;
-  transform:scale(1.05);
+  transform:scale(1.02);
   transition:transform .35s ease;
 }
 
-/* ROTATE MODE */
+/* ROTATE MODE – FULL PLAYER VISIBLE */
 body.rotate #frame-wrap iframe{
   width:100vh;
   height:100vw;
   transform:
     rotate(90deg)
-    scale(1.12);
+    scale(1.05); /* ✅ reduced zoom */
   transform-origin:center center;
   position:absolute;
   top:50%;
@@ -129,11 +125,8 @@ body.rotate #frame-wrap iframe{
 
 <!-- PLAYER -->
 <div id="player">
-  <!-- ✅ controls layer (never rotates) -->
-  <div id="controls">
-    <button id="backBtn" class="ctrl-btn" onclick="goBack()">←</button>
-    <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⛶ Fullscreen</button>
-  </div>
+  <button id="backBtn" class="ctrl-btn" onclick="goBack()">←</button>
+  <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⛶ Fullscreen</button>
 
   <div id="frame-wrap">
     <iframe id="playerFrame" allow="autoplay"></iframe>
@@ -141,15 +134,17 @@ body.rotate #frame-wrap iframe{
 </div>
 
 <script>
+/* TELEGRAM */
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
 
+/* CONFIG */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let shareURL = "";
 
-/* load title */
+/* LOAD TITLE */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -157,12 +152,15 @@ let shareURL = "";
     if(d.success && d.video){
       title.textContent = d.video.title;
       shareURL = d.video.video_url;
-    }else title.textContent="Video not found";
+    }else{
+      title.textContent = "Video not found";
+    }
   }catch{
-    title.textContent="Error loading video";
+    title.textContent = "Error loading video";
   }
 })();
 
+/* WATCH */
 async function watch(){
   watchBtn.disabled=true;
   watchBtn.textContent="Loading...";
@@ -170,6 +168,7 @@ async function watch(){
   openPlayer();
 }
 
+/* SAFE AD */
 function showAdSafe(timeout=6000){
   return new Promise(resolve=>{
     let done=false;
@@ -181,6 +180,7 @@ function showAdSafe(timeout=6000){
   });
 }
 
+/* PLAYER CONTROL */
 function openPlayer(){
   ui.style.display="none";
   player.style.display="block";
