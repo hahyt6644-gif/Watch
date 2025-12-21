@@ -7,13 +7,8 @@
 
 <title>Watch Video</title>
 
-<!-- Telegram WebApp SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
-
-<!-- Monetag -->
-<script src="//libtl.com/sdk.js"
-        data-zone="9981288"
-        data-sdk="show_9981288"></script>
+<script src="//libtl.com/sdk.js" data-zone="9981288" data-sdk="show_9981288"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,9 +21,9 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ================= WATCH UI ================= */
+/* ============ WATCH UI ============ */
 #ui{
-  padding:12px;
+  padding:14px;
   background:#f2f3f5;
 }
 .card{
@@ -36,12 +31,12 @@ html,body{
   margin:auto;
   background:#111;
   color:#fff;
-  padding:14px;
+  padding:16px;
   border-radius:14px;
   text-align:center;
 }
 .card h2{font-size:15px;margin-bottom:6px}
-.card p{font-size:12px;opacity:.65;margin-bottom:10px}
+.card p{font-size:12px;opacity:.65;margin-bottom:12px}
 .card button{
   width:100%;
   padding:12px;
@@ -52,7 +47,7 @@ html,body{
   background:#22b8b0;
 }
 
-/* ================= PLAYER WRAPPER ================= */
+/* ============ PLAYER OVERLAY ============ */
 #player{
   display:none;
   position:fixed;
@@ -64,62 +59,82 @@ html,body{
   justify-content:center;
 }
 
-/* PLAYER BOX (controls attached here) */
+/* PLAYER BOX */
 #player-box{
   position:relative;
   width:100%;
-  max-width:420px;      /* 👈 portrait width */
-  aspect-ratio:9/16;   /* portrait ratio */
+  max-width:420px;
+  aspect-ratio:9/16;
   background:#000;
   border-radius:12px;
   overflow:hidden;
 }
 
-/* landscape fullscreen box */
+/* fullscreen player size */
 #player.fullscreen #player-box{
   max-width:90vw;
   aspect-ratio:16/9;
 }
 
-/* CONTROLS BAR (inside player) */
-#controls{
+/* ============ CONTROLS ============ */
+
+/* default controls (on player) */
+#controls-player{
   position:absolute;
-  top:6px;
-  left:6px;
-  right:6px;
+  top:8px;
+  left:8px;
+  right:8px;
   display:flex;
   justify-content:space-between;
   z-index:10;
-  pointer-events:none;
 }
 
+/* fullscreen controls (on screen edges) */
+#controls-screen{
+  display:none;
+}
+
+/* common button */
 .ctrl-btn{
-  pointer-events:auto;
   padding:6px 10px;
   border:none;
   border-radius:999px;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,.65);
   color:#fff;
   font-size:13px;
   font-weight:600;
   backdrop-filter:blur(6px);
 }
 
-/* iframe */
+/* screen-edge positioning */
+#fs-back{
+  position:fixed;
+  top:calc(10px + var(--tg-safe-area-inset-top));
+  left:calc(10px + var(--tg-safe-area-inset-left));
+  z-index:1000000;
+}
+#fs-normal{
+  position:fixed;
+  right:calc(10px + var(--tg-safe-area-inset-right));
+  bottom:calc(30px + var(--tg-safe-area-inset-bottom));
+  z-index:1000000;
+}
+
+/* ============ IFRAME ============ */
 #playerFrame{
   width:100%;
   height:100%;
   border:none;
   transform-origin:center center;
-  transition:transform .3s ease;
+  transition:transform .25s ease;
 }
 
-/* NORMAL */
+/* normal */
 .normal #playerFrame{
   transform:scale(1.02);
 }
 
-/* FULLSCREEN ROTATED */
+/* fullscreen rotated */
 .fullscreen #playerFrame{
   transform:rotate(90deg) scale(1.02);
 }
@@ -139,9 +154,11 @@ html,body{
 
 <!-- PLAYER -->
 <div id="player" class="normal">
+
+  <!-- PLAYER CONTROLS -->
   <div id="player-box">
 
-    <div id="controls">
+    <div id="controls-player">
       <button class="ctrl-btn" onclick="goBack()">←</button>
       <button id="rotateBtn" class="ctrl-btn" onclick="toggleFS()">⛶ Fullscreen</button>
     </div>
@@ -149,21 +166,28 @@ html,body{
     <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
 
   </div>
+
+  <!-- SCREEN CONTROLS (FULLSCREEN ONLY) -->
+  <div id="controls-screen">
+    <button id="fs-back" class="ctrl-btn" onclick="goBack()">✕ Close</button>
+    <button id="fs-normal" class="ctrl-btn" onclick="toggleFS()">⟳ Normal</button>
+  </div>
+
 </div>
 
 <script>
-/* ================= TELEGRAM ================= */
+/* ===== TELEGRAM ===== */
 const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-/* ================= CONFIG ================= */
+/* ===== CONFIG ===== */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let videoURL = "";
 
-/* ================= LOAD VIDEO ================= */
-(async()=>{
+/* ===== LOAD VIDEO ===== */
+(async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
     const d = await r.json();
@@ -176,15 +200,15 @@ let videoURL = "";
   }
 })();
 
-/* ================= WATCH ================= */
+/* ===== WATCH ===== */
 async function watch(){
   watchBtn.disabled=true;
-  watchBtn.textContent="Loading...";
+  watchBtn.textContent="Loading…";
   await showAdSafe(6000);
   openPlayer();
 }
 
-/* ================= AD ================= */
+/* ===== AD SAFE ===== */
 function showAdSafe(ms){
   return new Promise(res=>{
     let done=false;
@@ -196,7 +220,7 @@ function showAdSafe(ms){
   });
 }
 
-/* ================= PLAYER ================= */
+/* ===== PLAYER ===== */
 function openPlayer(){
   ui.style.display="none";
   player.style.display="flex";
@@ -207,6 +231,7 @@ function openPlayer(){
     encodeURIComponent(videoURL);
 }
 
+/* ===== BACK ===== */
 function goBack(){
   exitFS();
   playerFrame.src="";
@@ -216,7 +241,7 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* ================= FULLSCREEN / ROTATE ================= */
+/* ===== FULLSCREEN ===== */
 function toggleFS(){
   if(!player.classList.contains("fullscreen")){
     enterFS();
@@ -232,7 +257,9 @@ function enterFS(){
   }
   player.classList.remove("normal");
   player.classList.add("fullscreen");
-  rotateBtn.textContent="⟳ Normal";
+
+  document.getElementById("controls-player").style.display="none";
+  document.getElementById("controls-screen").style.display="block";
 }
 
 function exitFS(){
@@ -242,7 +269,9 @@ function exitFS(){
   }
   player.classList.remove("fullscreen");
   player.classList.add("normal");
-  rotateBtn.textContent="⛶ Fullscreen";
+
+  document.getElementById("controls-player").style.display="flex";
+  document.getElementById("controls-screen").style.display="none";
 }
 </script>
 
