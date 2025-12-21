@@ -25,7 +25,7 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ========== UI CARD ========== */
+/* ---------- UI CARD ---------- */
 #ui{
   padding:16px;
 }
@@ -50,7 +50,7 @@ html,body{
   background:#22b8b0;
 }
 
-/* ========== PLAYER ========== */
+/* ---------- PLAYER ---------- */
 #player{
   display:none;
   position:fixed;
@@ -59,53 +59,55 @@ html,body{
   z-index:999999;
 }
 
-/* top bar */
-#topbar{
+/* floating buttons */
+.ctrl-btn{
   position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:48px;
-  background:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 12px;
   z-index:1000000;
-}
-#topbar button{
-  background:none;
+  padding:8px 10px;
   border:none;
-  font-size:15px;
-  font-weight:700;
+  border-radius:999px;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  font-size:14px;
+  font-weight:600;
+  backdrop-filter:blur(6px);
+}
+
+/* back button (small, no border bar) */
+#backBtn{
+  top:12px;
+  left:12px;
+}
+
+/* rotate button */
+#rotateBtn{
+  top:12px;
+  right:12px;
 }
 
 /* iframe wrapper */
 #frame-wrap{
   position:absolute;
-  top:48px;
-  left:0;
-  right:0;
-  bottom:0;
-  background:#000;
+  inset:0;
   overflow:hidden;
 }
 
-/* normal iframe */
+/* NORMAL MODE (small zoom) */
 #frame-wrap iframe{
   width:100%;
   height:100%;
   border:none;
+  transform:scale(1.06);
   transition:transform .35s ease;
 }
 
-/* ===== ROTATE + ZOOM MODE ===== */
+/* ROTATE MODE (less zoom) */
 body.rotate #frame-wrap iframe{
   width:100vh;
   height:100vw;
   transform:
     rotate(90deg)
-    scale(1.25);
+    scale(1.12);
   transform-origin:center center;
   position:absolute;
   top:50%;
@@ -128,10 +130,8 @@ body.rotate #frame-wrap iframe{
 
 <!-- PLAYER -->
 <div id="player">
-  <div id="topbar">
-    <button onclick="goBack()">← Back</button>
-    <button onclick="toggleRotate()">⟳ Rotate</button>
-  </div>
+  <button id="backBtn" class="ctrl-btn" onclick="goBack()">←</button>
+  <button id="rotateBtn" class="ctrl-btn" onclick="toggleRotate()">⟳</button>
 
   <div id="frame-wrap">
     <iframe id="playerFrame" allow="autoplay"></iframe>
@@ -149,7 +149,7 @@ const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let shareURL = "";
 
-/* ---------- LOAD TITLE FAST ---------- */
+/* ---------- LOAD TITLE ---------- */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -193,7 +193,7 @@ function showAdSafe(timeout=6000){
   });
 }
 
-/* ---------- PLAYER CONTROLS ---------- */
+/* ---------- PLAYER ---------- */
 function openPlayer(){
   ui.style.display="none";
   player.style.display="block";
@@ -214,7 +214,7 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* ---------- ROTATE / ZOOM TOGGLE ---------- */
+/* ---------- ROTATE ---------- */
 function toggleRotate(){
   document.body.classList.toggle("rotate");
 }
