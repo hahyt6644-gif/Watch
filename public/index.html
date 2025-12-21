@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Video Player</title>
 
@@ -20,25 +19,32 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ---------- PLAYER ROOT ---------- */
+/* ================= PLAYER ROOT ================= */
 #player{
   position:fixed;
   inset:0;
   background:#000;
 }
 
-/* ---------- RED BOX (SAFE AREA) ---------- */
+/* ================= NORMAL MODE ================= */
+#normalBox{
+  position:absolute;
+  inset:0;
+}
+
+/* ================= RED BOX (FULLSCREEN SAFE AREA) ================= */
 #safeBox{
   position:absolute;
-  top:48px;       /* Telegram header height */
+  top:48px; /* telegram header */
   bottom:0;
   left:0;
   right:0;
   background:#000;
+  display:none;
   overflow:hidden;
 }
 
-/* ---------- VIDEO ---------- */
+/* ================= IFRAME ================= */
 #playerFrame{
   position:absolute;
   width:100%;
@@ -47,7 +53,7 @@ html,body{
   background:#000;
 }
 
-/* ---------- FULLSCREEN ROTATION ---------- */
+/* ================= ROTATION ================= */
 #safeBox.fullscreen #playerFrame{
   width:100vh;
   height:100vw;
@@ -58,7 +64,7 @@ html,body{
   translate:-50% -50%;
 }
 
-/* ---------- CONTROLS ---------- */
+/* ================= CONTROLS ================= */
 .ctrl{
   position:absolute;
   background:rgba(0,0,0,.6);
@@ -70,19 +76,15 @@ html,body{
   z-index:10;
 }
 
-/* Back button (TOP LEFT) */
-#btnBack{
-  top:10px;
-  left:10px;
-}
+/* ---- normal mode button positions ---- */
+#normalBack{ top:12px; left:12px; }
+#normalFull{ bottom:12px; right:12px; }
 
-/* Fullscreen / Normal (BOTTOM RIGHT) */
-#btnToggle{
-  bottom:10px;
-  right:10px;
-}
+/* ---- fullscreen (red box) positions ---- */
+#fsBack{ top:10px; left:10px; }
+#fsNormal{ bottom:10px; right:10px; }
 
-/* ---------- LOADER ---------- */
+/* ================= LOADER ================= */
 #loader{
   position:absolute;
   inset:0;
@@ -99,20 +101,23 @@ html,body{
 <body>
 
 <div id="player">
-  <div id="safeBox">
 
-    <div id="loader">Loading…</div>
+  <!-- NORMAL MODE -->
+  <div id="normalBox">
+    <iframe id="playerFrame"></iframe>
 
-    <iframe
-      id="playerFrame"
-      allow="autoplay; fullscreen"
-      src="https://playterabox.com/embed/player?url=https://example.com/video.mp4">
-    </iframe>
-
-    <button id="btnBack" class="ctrl" onclick="goBack()">✕</button>
-    <button id="btnToggle" class="ctrl" onclick="toggleScreen()">⤢</button>
-
+    <button id="normalBack" class="ctrl" onclick="goBack()">✕</button>
+    <button id="normalFull" class="ctrl" onclick="enterFullscreen()">⛶</button>
   </div>
+
+  <!-- FULLSCREEN RED BOX -->
+  <div id="safeBox">
+    <iframe id="fsFrame"></iframe>
+
+    <button id="fsBack" class="ctrl" onclick="exitFullscreen()">✕</button>
+    <button id="fsNormal" class="ctrl" onclick="exitFullscreen()">⤢</button>
+  </div>
+
 </div>
 
 <script>
@@ -120,40 +125,34 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-let isFullscreen = false;
+const VIDEO_URL =
+  "https://playterabox.com/embed/player?url=https://example.com/video.mp4";
 
-function toggleScreen(){
-  if(isFullscreen){
-    exitFullscreen();
-  }else{
-    enterFullscreen();
-  }
-}
+/* init */
+playerFrame.src = VIDEO_URL;
+fsFrame.src = VIDEO_URL;
 
 function enterFullscreen(){
   tg.requestFullscreen?.();
   tg.lockOrientation?.();
+
+  normalBox.style.display="none";
+  safeBox.style.display="block";
   safeBox.classList.add("fullscreen");
-  isFullscreen = true;
-  btnToggle.textContent = "⤢"; // normal icon
 }
 
 function exitFullscreen(){
   tg.exitFullscreen?.();
   tg.unlockOrientation?.();
+
   safeBox.classList.remove("fullscreen");
-  isFullscreen = false;
-  btnToggle.textContent = "⤢"; // fullscreen icon
+  safeBox.style.display="none";
+  normalBox.style.display="block";
 }
 
 function goBack(){
-  exitFullscreen();
   tg.close();
 }
-
-window.onload = ()=>{
-  setTimeout(()=>loader.style.display="none",1000);
-};
 </script>
 
 </body>
