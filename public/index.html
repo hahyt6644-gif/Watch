@@ -15,16 +15,25 @@
         data-sdk="show_9981288"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-body{
-  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+html,body{
+  width:100%;
+  height:100%;
   background:#000;
-  color:#fff;
+  overflow:hidden;
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+}
+
+/* UI card */
+#ui{
   padding:12px;
 }
 
-/* Card */
 .container{
   max-width:500px;
   margin:auto;
@@ -34,8 +43,10 @@ body{
   text-align:center;
 }
 
-h1{font-size:18px;margin-bottom:6px}
-p{font-size:13px;color:#aaa;margin-bottom:12px}
+h1{
+  font-size:18px;
+  margin-bottom:8px;
+}
 
 button{
   width:100%;
@@ -48,33 +59,37 @@ button{
   background:linear-gradient(135deg,#32b8c6,#28a0ac);
   color:#000;
 }
-button:disabled{opacity:.6}
 
-/* Player overlay */
+/* PLAYER (MAX SCREEN) */
 #player-wrap{
   display:none;
   position:fixed;
-  inset:0;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
   background:#000;
-  z-index:2147483647;
+  z-index:999999;
 }
 
+/* iframe forced large */
 #player-wrap iframe{
-  width:100%;
-  height:100%;
+  width:100vw;
+  height:100vh;
   border:none;
+  transform:scale(1.02); /* slight zoom */
 }
 
-/* Back button */
+/* back button */
 #back-btn{
-  position:absolute;
-  top:12px;
-  left:12px;
-  z-index:2147483648;
+  position:fixed;
+  top:8px;
+  left:8px;
+  z-index:1000000;
   padding:8px 12px;
   border-radius:6px;
   border:none;
-  background:#fff;
+  background:rgba(255,255,255,0.95);
   font-weight:700;
 }
 </style>
@@ -82,13 +97,14 @@ button:disabled{opacity:.6}
 
 <body>
 
-<div class="container">
-  <h1 id="videoTitle">Loading…</h1>
-  <p>Watch ad to unlock video</p>
-  <button id="watchBtn" onclick="watch()">Watch Video 🎬</button>
+<div id="ui">
+  <div class="container">
+    <h1 id="videoTitle">Loading…</h1>
+    <button id="watchBtn" onclick="watch()">Watch Video 🎬</button>
+  </div>
 </div>
 
-<!-- Player -->
+<!-- PLAYER -->
 <div id="player-wrap">
   <button id="back-btn" onclick="closePlayer()">← Back</button>
   <iframe id="playerFrame"
@@ -97,54 +113,52 @@ button:disabled{opacity:.6}
 </div>
 
 <script>
-/* ---------- TELEGRAM ---------- */
+/* TELEGRAM SETUP */
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
+tg.enableClosingConfirmation?.();
 
-/* ---------- CONFIG ---------- */
+/* CONFIG */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
-
 let shareURL = "";
 
-/* ---------- LOAD TITLE INSTANTLY ---------- */
-(async function preload(){
+/* LOAD TITLE FAST */
+(async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
     const d = await r.json();
-
     if(d.success && d.video){
       document.getElementById("videoTitle").textContent =
         d.video.title || "Watch Video";
-
       shareURL = d.video.video_url;
     }else{
       document.getElementById("videoTitle").textContent = "Video not found";
     }
   }catch{
-    document.getElementById("videoTitle").textContent = "Error loading video";
+    document.getElementById("videoTitle").textContent = "Error loading";
   }
 })();
 
-/* ---------- WATCH FLOW ---------- */
+/* WATCH FLOW */
 async function watch(){
-  const btn = document.getElementById("watchBtn");
-  btn.disabled = true;
-  btn.textContent = "Loading...";
+  const btn=document.getElementById("watchBtn");
+  btn.disabled=true;
+  btn.textContent="Loading...";
 
-  /* 1️⃣ Show ad FIRST */
+  /* show ad first */
   await showAdSafe();
 
-  /* 2️⃣ Open iframe AFTER ad */
+  /* open large player */
   openPlayer();
 }
 
-/* ---------- AD (SAFE) ---------- */
+/* SAFE AD */
 function showAdSafe(timeout=8000){
   return new Promise(resolve=>{
     let done=false;
-    const t=setTimeout(()=>{ if(!done){done=true;resolve();}},timeout);
+    const t=setTimeout(()=>{if(!done){done=true;resolve();}},timeout);
 
     try{
       show_9981288({
@@ -159,8 +173,10 @@ function showAdSafe(timeout=8000){
   });
 }
 
-/* ---------- PLAYER ---------- */
+/* OPEN LARGE SCREEN */
 function openPlayer(){
+  document.getElementById("ui").style.display="none";
+
   const wrap=document.getElementById("player-wrap");
   const iframe=document.getElementById("playerFrame");
 
@@ -169,24 +185,21 @@ function openPlayer(){
     encodeURIComponent(shareURL);
 
   wrap.style.display="block";
-  document.body.style.overflow="hidden";
 
-  /* REAL FULLSCREEN */
-  if(wrap.requestFullscreen){
-    wrap.requestFullscreen();
-  }else if(wrap.webkitRequestFullscreen){
-    wrap.webkitRequestFullscreen();
+  /* force landscape */
+  if(screen.orientation?.lock){
+    screen.orientation.lock("landscape").catch(()=>{});
   }
 }
 
+/* CLOSE */
 function closePlayer(){
-  const wrap=document.getElementById("player-wrap");
-  wrap.style.display="none";
+  document.getElementById("player-wrap").style.display="none";
   document.getElementById("playerFrame").src="";
-  document.body.style.overflow="";
+  document.getElementById("ui").style.display="block";
 
-  if(document.fullscreenElement){
-    document.exitFullscreen();
+  if(screen.orientation?.unlock){
+    screen.orientation.unlock();
   }
 }
 </script>
