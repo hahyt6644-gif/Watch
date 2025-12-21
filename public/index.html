@@ -6,10 +6,10 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Watch Video</title>
 
-<!-- Telegram WebApp -->
+<!-- Telegram -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<!-- Monetag Rewarded Ad -->
+<!-- Monetag -->
 <script src="//libtl.com/sdk.js"
         data-zone="9981288"
         data-sdk="show_9981288"></script>
@@ -48,7 +48,7 @@ button{
   background:linear-gradient(135deg,#32b8c6,#28a0ac);
   color:#000;
 }
-button:disabled{opacity:.6;cursor:not-allowed}
+button:disabled{opacity:.6}
 
 /* Player overlay */
 #player-wrap{
@@ -77,33 +77,13 @@ button:disabled{opacity:.6;cursor:not-allowed}
   background:#fff;
   font-weight:700;
 }
-
-/* Logs */
-#logBox{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  max-height:35%;
-  overflow:auto;
-  background:#111;
-  border-top:1px solid #333;
-  font-size:11px;
-  padding:6px;
-  z-index:2147483649;
-}
-
-.log{margin-bottom:4px}
-.ok{color:#4caf50}
-.err{color:#f44336}
-.info{color:#03a9f4}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1 id="videoTitle">Watch Video</h1>
+  <h1 id="videoTitle">Loading…</h1>
   <p>Watch ad to unlock video</p>
   <button id="watchBtn" onclick="watch()">Watch Video 🎬</button>
 </div>
@@ -116,102 +96,98 @@ button:disabled{opacity:.6;cursor:not-allowed}
           allowfullscreen></iframe>
 </div>
 
-<!-- Logs -->
-<div id="logBox"></div>
-
 <script>
-/* ---------- LOGGING ---------- */
-function log(msg,type="info"){
-  console.log(msg);
-  const box=document.getElementById("logBox");
-  const div=document.createElement("div");
-  div.className="log "+type;
-  div.textContent=new Date().toLocaleTimeString()+" - "+msg;
-  box.appendChild(div);
-  box.scrollTop=box.scrollHeight;
-}
-
 /* ---------- TELEGRAM ---------- */
 const tg = window.Telegram?.WebApp || {};
 tg.expand?.();
 tg.ready?.();
-log("Telegram WebApp ready","ok");
 
 /* ---------- CONFIG ---------- */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
-log("Video ID: "+videoId,"info");
 
-/* ---------- MAIN ---------- */
-async function watch(){
-  const btn=document.getElementById("watchBtn");
-  btn.disabled=true;
-  btn.textContent="Loading...";
-  log("Watch clicked","info");
+let shareURL = "";
 
-  /* 1️⃣ Fetch video data */
-  let data;
+/* ---------- LOAD TITLE INSTANTLY ---------- */
+(async function preload(){
   try{
-    log("Fetching video data...","info");
     const r = await fetch(`${API}?video_id=${videoId}`);
-    data = await r.json();
+    const d = await r.json();
 
-    if(!data.success || !data.video || !data.video.video_url){
-      throw new Error("Invalid API response");
+    if(d.success && d.video){
+      document.getElementById("videoTitle").textContent =
+        d.video.title || "Watch Video";
+
+      shareURL = d.video.video_url;
+    }else{
+      document.getElementById("videoTitle").textContent = "Video not found";
     }
-
-    log("Video data received","ok");
-  }catch(e){
-    log("No video data found","err");
-    btn.disabled=false;
-    btn.textContent="Retry";
-    return;
+  }catch{
+    document.getElementById("videoTitle").textContent = "Error loading video";
   }
+})();
 
-  /* 2️⃣ Set title */
-  document.getElementById("videoTitle").textContent =
-    data.video.title || "Watch Video";
-  log("Title set: "+data.video.title,"ok");
+/* ---------- WATCH FLOW ---------- */
+async function watch(){
+  const btn = document.getElementById("watchBtn");
+  btn.disabled = true;
+  btn.textContent = "Loading...";
 
-  /* 3️⃣ Prepare iframe */
-  const iframeURL =
-    "https://playterabox.com/embed/player?url=" +
-    encodeURIComponent(data.video.video_url);
+  /* 1️⃣ Show ad FIRST */
+  await showAdSafe();
 
-  const iframe=document.getElementById("playerFrame");
-  iframe.src=iframeURL;
-  log("Iframe URL set","ok");
-
-  /* 4️⃣ Open player immediately (Telegram-safe) */
+  /* 2️⃣ Open iframe AFTER ad */
   openPlayer();
-  log("Player opened","ok");
-
-  /* 5️⃣ Show ad on top */
-  setTimeout(()=>{
-    try{
-      log("Attempting to show ad","info");
-      show_9981288({
-        onRewarded:()=>log("Ad rewarded","ok"),
-        onClose:()=>log("Ad closed","info"),
-        onError:()=>log("Ad error","err")
-      });
-    }catch{
-      log("Ad call failed","err");
-    }
-  },300);
 }
 
-/* ---------- PLAYER CONTROLS ---------- */
+/* ---------- AD (SAFE) ---------- */
+function showAdSafe(timeout=8000){
+  return new Promise(resolve=>{
+    let done=false;
+    const t=setTimeout(()=>{ if(!done){done=true;resolve();}},timeout);
+
+    try{
+      show_9981288({
+        onRewarded:()=>{if(done)return;done=true;clearTimeout(t);resolve();},
+        onClose:()=>{if(done)return;done=true;clearTimeout(t);resolve();},
+        onError:()=>{if(done)return;done=true;clearTimeout(t);resolve();}
+      });
+    }catch{
+      clearTimeout(t);
+      resolve();
+    }
+  });
+}
+
+/* ---------- PLAYER ---------- */
 function openPlayer(){
-  document.getElementById("player-wrap").style.display="block";
+  const wrap=document.getElementById("player-wrap");
+  const iframe=document.getElementById("playerFrame");
+
+  iframe.src =
+    "https://playterabox.com/embed/player?url=" +
+    encodeURIComponent(shareURL);
+
+  wrap.style.display="block";
   document.body.style.overflow="hidden";
+
+  /* REAL FULLSCREEN */
+  if(wrap.requestFullscreen){
+    wrap.requestFullscreen();
+  }else if(wrap.webkitRequestFullscreen){
+    wrap.webkitRequestFullscreen();
+  }
 }
 
 function closePlayer(){
-  log("Player closed","info");
-  document.getElementById("player-wrap").style.display="none";
+  const wrap=document.getElementById("player-wrap");
+  wrap.style.display="none";
   document.getElementById("playerFrame").src="";
   document.body.style.overflow="";
+
+  if(document.fullscreenElement){
+    document.exitFullscreen();
+  }
 }
 </script>
 
