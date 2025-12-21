@@ -58,7 +58,7 @@ html,body{
   justify-content:center;
 }
 
-/* PLAYER BOX */
+/* PLAYER BOX (NORMAL MODE) */
 #player-box{
   position:relative;
   width:100%;
@@ -69,13 +69,16 @@ html,body{
   overflow:hidden;
 }
 
-/* landscape */
+/* FULLSCREEN MODE → PLAYER BOX = FULL SCREEN */
 #player.fullscreen #player-box{
-  max-width:90vw;
-  aspect-ratio:16/9;
+  width:100vw;
+  height:100vh;
+  max-width:none;
+  aspect-ratio:auto;
+  border-radius:0;
 }
 
-/* CONTROLS */
+/* ================= CONTROLS ================= */
 #controls-player{
   position:absolute;
   top:8px;
@@ -85,9 +88,7 @@ html,body{
   justify-content:space-between;
   z-index:10;
 }
-#controls-screen{
-  display:none;
-}
+#controls-screen{display:none}
 
 .ctrl-btn{
   padding:6px 10px;
@@ -96,10 +97,9 @@ html,body{
   background:rgba(0,0,0,.65);
   color:#fff;
   font-size:13px;
-  font-weight:600;
 }
 
-/* fullscreen controls */
+/* screen-edge fullscreen controls */
 #fs-back{
   position:fixed;
   top:10px;
@@ -113,12 +113,23 @@ html,body{
   z-index:1000000;
 }
 
-/* IFRAME */
+/* ================= IFRAME ================= */
 #playerFrame{
   width:100%;
   height:100%;
   border:none;
   background:#000;
+  transform-origin:center center;
+}
+
+/* normal */
+.normal #playerFrame{
+  transform:scale(1.02);
+}
+
+/* fullscreen + rotated */
+.fullscreen #playerFrame{
+  transform:rotate(90deg) scale(1.02);
 }
 
 /* LOADER */
@@ -143,7 +154,7 @@ html,body{
   <div class="card">
     <h2 id="title">Loading…</h2>
     <p>Watch ad to unlock video</p>
-    <button id="watchBtn" onclick="watch()">Watch Video 🎬</button>
+    <button id="watchBtn" disabled onclick="watch()">Watch Video 🎬</button>
   </div>
 </div>
 
@@ -174,46 +185,44 @@ tg.expand();
 
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
-let videoURL = "";
 
-/* load title early */
+let videoURL = "";
+let ready = false;
+
+/* LOAD VIDEO URL FIRST */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
     const d = await r.json();
-    if(d.success){
+    if(d.success && d.video?.video_url){
       title.textContent = d.video.title;
       videoURL = d.video.video_url;
+      ready = true;
+      watchBtn.disabled = false;
     }else title.textContent="Video not found";
   }catch{
     title.textContent="Load error";
   }
 })();
 
-/* WATCH */
 async function watch(){
+  if(!ready) return;
+
   watchBtn.disabled=true;
   watchBtn.textContent="Loading…";
 
-  // 🔑 START LOADING IFRAME BEFORE AD
-  preloadIframe();
-
-  // show ad while iframe loads
+  preloadIframe();       // load iframe during ad
   await showAdSafe(6000);
-
-  // now show player instantly
   openPlayer();
 }
 
 function preloadIframe(){
+  loader.style.display="flex";
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(videoURL);
 
-  // auto-hide loader no matter what
-  setTimeout(()=>{
-    loader.style.display="none";
-  }, 1500);
+  setTimeout(()=>loader.style.display="none",1500);
 }
 
 function showAdSafe(ms){
