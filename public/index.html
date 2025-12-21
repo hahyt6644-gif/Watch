@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Video Player</title>
+<title>Watch Video</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
 
@@ -19,28 +20,20 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ================= PLAYER ROOT ================= */
+/* ================= PLAYER ================= */
 #player{
+  display:none;
   position:fixed;
   inset:0;
   background:#000;
+  z-index:999999;
 }
 
-/* ================= NORMAL MODE ================= */
-#normalBox{
+/* ================= PLAYER BOX ================= */
+#playerBox{
   position:absolute;
   inset:0;
-}
-
-/* ================= RED BOX (FULLSCREEN SAFE AREA) ================= */
-#safeBox{
-  position:absolute;
-  top:48px; /* telegram header */
-  bottom:0;
-  left:0;
-  right:0;
   background:#000;
-  display:none;
   overflow:hidden;
 }
 
@@ -53,8 +46,16 @@ html,body{
   background:#000;
 }
 
-/* ================= ROTATION ================= */
-#safeBox.fullscreen #playerFrame{
+/* ================= FULLSCREEN (RED BOX) ================= */
+#player.fullscreen{
+  padding-top:48px; /* telegram header */
+}
+
+#player.fullscreen #playerBox{
+  height:calc(100% - 48px);
+}
+
+#player.fullscreen #playerFrame{
   width:100vh;
   height:100vw;
   transform:rotate(90deg);
@@ -76,48 +77,40 @@ html,body{
   z-index:10;
 }
 
-/* ---- normal mode button positions ---- */
-#normalBack{ top:12px; left:12px; }
-#normalFull{ bottom:12px; right:12px; }
+/* NORMAL MODE POSITIONS */
+#btnBack{ top:12px; left:12px; }
+#btnToggle{ bottom:12px; right:12px; }
 
-/* ---- fullscreen (red box) positions ---- */
-#fsBack{ top:10px; left:10px; }
-#fsNormal{ bottom:10px; right:10px; }
+/* FULLSCREEN POSITIONS (RED BOX) */
+#player.fullscreen #btnBack{
+  top:10px;
+  left:10px;
+}
 
-/* ================= LOADER ================= */
-#loader{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:14px;
-  z-index:5;
+#player.fullscreen #btnToggle{
+  bottom:10px;
+  right:10px;
 }
 </style>
 </head>
 
 <body>
 
+<!-- PLAYER -->
 <div id="player">
+  <div id="playerBox">
 
-  <!-- NORMAL MODE -->
-  <div id="normalBox">
-    <iframe id="playerFrame"></iframe>
+    <iframe
+      id="playerFrame"
+      allow="autoplay; fullscreen"
+      src="https://playterabox.com/embed/player?url=https://example.com/video.mp4">
+    </iframe>
 
-    <button id="normalBack" class="ctrl" onclick="goBack()">✕</button>
-    <button id="normalFull" class="ctrl" onclick="enterFullscreen()">⛶</button>
+    <!-- CONTROLS -->
+    <button id="btnBack" class="ctrl" onclick="goBack()">✕</button>
+    <button id="btnToggle" class="ctrl" onclick="toggleFullscreen()">⛶</button>
+
   </div>
-
-  <!-- FULLSCREEN RED BOX -->
-  <div id="safeBox">
-    <iframe id="fsFrame"></iframe>
-
-    <button id="fsBack" class="ctrl" onclick="exitFullscreen()">✕</button>
-    <button id="fsNormal" class="ctrl" onclick="exitFullscreen()">⤢</button>
-  </div>
-
 </div>
 
 <script>
@@ -125,34 +118,48 @@ const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-const VIDEO_URL =
-  "https://playterabox.com/embed/player?url=https://example.com/video.mp4";
+let isFullscreen = false;
 
-/* init */
-playerFrame.src = VIDEO_URL;
-fsFrame.src = VIDEO_URL;
+/* OPEN PLAYER */
+function openPlayer(){
+  player.style.display = "block";
+  exitFullscreen();
+}
+
+/* BACK */
+function goBack(){
+  exitFullscreen();
+  player.style.display = "none";
+  tg.close?.();
+}
+
+/* FULLSCREEN TOGGLE */
+function toggleFullscreen(){
+  if(isFullscreen){
+    exitFullscreen();
+  }else{
+    enterFullscreen();
+  }
+}
 
 function enterFullscreen(){
   tg.requestFullscreen?.();
   tg.lockOrientation?.();
-
-  normalBox.style.display="none";
-  safeBox.style.display="block";
-  safeBox.classList.add("fullscreen");
+  player.classList.add("fullscreen");
+  btnToggle.textContent = "⤢";
+  isFullscreen = true;
 }
 
 function exitFullscreen(){
   tg.exitFullscreen?.();
   tg.unlockOrientation?.();
-
-  safeBox.classList.remove("fullscreen");
-  safeBox.style.display="none";
-  normalBox.style.display="block";
+  player.classList.remove("fullscreen");
+  btnToggle.textContent = "⛶";
+  isFullscreen = false;
 }
 
-function goBack(){
-  tg.close();
-}
+/* AUTO OPEN FOR TEST */
+openPlayer();
 </script>
 
 </body>
