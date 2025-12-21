@@ -21,7 +21,7 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ============ WATCH UI ============ */
+/* ================= WATCH UI ================= */
 #ui{
   padding:14px;
   background:#f2f3f5;
@@ -47,7 +47,7 @@ html,body{
   background:#22b8b0;
 }
 
-/* ============ PLAYER ============ */
+/* ================= PLAYER ================= */
 #player{
   display:none;
   position:fixed;
@@ -85,7 +85,6 @@ html,body{
   justify-content:space-between;
   z-index:10;
 }
-
 #controls-screen{
   display:none;
 }
@@ -196,7 +195,7 @@ async function watch(){
   watchBtn.textContent="Loading…";
 
   await showAdSafe(6000);
-  openPlayer();   // ← always open player AFTER ad
+  openPlayer();
 }
 
 function showAdSafe(ms){
@@ -216,17 +215,18 @@ function openPlayer(){
   player.className="normal";
   controlsPlayer.style.display="flex";
   controlsScreen.style.display="none";
+
   loader.style.display="flex";
 
-  // 🔑 SET SRC FIRST
+  // 🔑 SET SRC
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(videoURL);
 
-  // hide loader when iframe loads
-  playerFrame.onload = () => {
+  // 🔑 HIDE LOADER GUARANTEED
+  setTimeout(()=>{
     loader.style.display="none";
-  };
+  }, 1200); // safe delay
 }
 
 function goBack(){
@@ -243,11 +243,10 @@ function toggleFS(){
 }
 
 function enterFS(){
-  // 🔑 delay fullscreen until iframe visible
   setTimeout(()=>{
     tg.requestFullscreen?.();
     tg.lockOrientation?.();
-  }, 200);
+  },200);
 
   player.classList.add("fullscreen");
   controlsPlayer.style.display="none";
