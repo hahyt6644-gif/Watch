@@ -21,7 +21,7 @@ html,body{
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
 }
 
-/* ============ WATCH UI ============ */
+/* ================= WATCH UI ================= */
 #ui{
   padding:14px;
   background:#f2f3f5;
@@ -47,14 +47,13 @@ html,body{
   background:#22b8b0;
 }
 
-/* ============ PLAYER OVERLAY ============ */
+/* ================= PLAYER ================= */
 #player{
-  display:none;
+  display:none;            /* 🔒 hidden initially */
   position:fixed;
   inset:0;
   background:#000;
   z-index:999999;
-  display:flex;
   align-items:center;
   justify-content:center;
 }
@@ -70,15 +69,13 @@ html,body{
   overflow:hidden;
 }
 
-/* fullscreen player size */
+/* landscape */
 #player.fullscreen #player-box{
   max-width:90vw;
   aspect-ratio:16/9;
 }
 
-/* ============ CONTROLS ============ */
-
-/* default controls (on player) */
+/* ================= CONTROLS ================= */
 #controls-player{
   position:absolute;
   top:8px;
@@ -89,12 +86,10 @@ html,body{
   z-index:10;
 }
 
-/* fullscreen controls (on screen edges) */
 #controls-screen{
-  display:none;
+  display:none;            /* 🔒 hidden initially */
 }
 
-/* common button */
 .ctrl-btn{
   padding:6px 10px;
   border:none;
@@ -103,24 +98,23 @@ html,body{
   color:#fff;
   font-size:13px;
   font-weight:600;
-  backdrop-filter:blur(6px);
 }
 
-/* screen-edge positioning */
+/* fullscreen screen-edge buttons */
 #fs-back{
   position:fixed;
-  top:calc(10px + var(--tg-safe-area-inset-top));
-  left:calc(10px + var(--tg-safe-area-inset-left));
+  top:10px;
+  left:10px;
   z-index:1000000;
 }
 #fs-normal{
   position:fixed;
-  right:calc(10px + var(--tg-safe-area-inset-right));
-  bottom:calc(30px + var(--tg-safe-area-inset-bottom));
+  right:10px;
+  bottom:30px;
   z-index:1000000;
 }
 
-/* ============ IFRAME ============ */
+/* ================= IFRAME ================= */
 #playerFrame{
   width:100%;
   height:100%;
@@ -128,22 +122,14 @@ html,body{
   transform-origin:center center;
   transition:transform .25s ease;
 }
-
-/* normal */
-.normal #playerFrame{
-  transform:scale(1.02);
-}
-
-/* fullscreen rotated */
-.fullscreen #playerFrame{
-  transform:rotate(90deg) scale(1.02);
-}
+.normal #playerFrame{ transform:scale(1.02); }
+.fullscreen #playerFrame{ transform:rotate(90deg) scale(1.02); }
 </style>
 </head>
 
 <body>
 
-<!-- WATCH -->
+<!-- WATCH SCREEN -->
 <div id="ui">
   <div class="card">
     <h2 id="title">Loading…</h2>
@@ -155,19 +141,16 @@ html,body{
 <!-- PLAYER -->
 <div id="player" class="normal">
 
-  <!-- PLAYER CONTROLS -->
   <div id="player-box">
-
     <div id="controls-player">
       <button class="ctrl-btn" onclick="goBack()">←</button>
-      <button id="rotateBtn" class="ctrl-btn" onclick="toggleFS()">⛶ Fullscreen</button>
+      <button class="ctrl-btn" onclick="toggleFS()">⛶ Fullscreen</button>
     </div>
 
     <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
-
   </div>
 
-  <!-- SCREEN CONTROLS (FULLSCREEN ONLY) -->
+  <!-- fullscreen controls -->
   <div id="controls-screen">
     <button id="fs-back" class="ctrl-btn" onclick="goBack()">✕ Close</button>
     <button id="fs-normal" class="ctrl-btn" onclick="toggleFS()">⟳ Normal</button>
@@ -176,17 +159,15 @@ html,body{
 </div>
 
 <script>
-/* ===== TELEGRAM ===== */
 const tg = Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-/* ===== CONFIG ===== */
 const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 let videoURL = "";
 
-/* ===== LOAD VIDEO ===== */
+/* load title only */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -200,7 +181,6 @@ let videoURL = "";
   }
 })();
 
-/* ===== WATCH ===== */
 async function watch(){
   watchBtn.disabled=true;
   watchBtn.textContent="Loading…";
@@ -208,7 +188,6 @@ async function watch(){
   openPlayer();
 }
 
-/* ===== AD SAFE ===== */
 function showAdSafe(ms){
   return new Promise(res=>{
     let done=false;
@@ -220,18 +199,19 @@ function showAdSafe(ms){
   });
 }
 
-/* ===== PLAYER ===== */
+/* open player ONLY here */
 function openPlayer(){
   ui.style.display="none";
   player.style.display="flex";
   player.className="normal";
+  controlsPlayer.style.display="flex";
+  controlsScreen.style.display="none";
 
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(videoURL);
 }
 
-/* ===== BACK ===== */
 function goBack(){
   exitFS();
   playerFrame.src="";
@@ -241,39 +221,26 @@ function goBack(){
   watchBtn.textContent="Watch Video 🎬";
 }
 
-/* ===== FULLSCREEN ===== */
 function toggleFS(){
-  if(!player.classList.contains("fullscreen")){
-    enterFS();
-  }else{
-    exitFS();
-  }
+  player.classList.contains("fullscreen") ? exitFS() : enterFS();
 }
 
 function enterFS(){
-  if(tg.isVersionAtLeast("8.0")){
-    tg.requestFullscreen();
-    tg.lockOrientation();
-  }
-  player.classList.remove("normal");
+  tg.requestFullscreen?.();
+  tg.lockOrientation?.();
   player.classList.add("fullscreen");
-
-  document.getElementById("controls-player").style.display="none";
-  document.getElementById("controls-screen").style.display="block";
+  controlsPlayer.style.display="none";
+  controlsScreen.style.display="block";
 }
 
 function exitFS(){
-  if(tg.isFullscreen){
-    tg.exitFullscreen();
-    tg.unlockOrientation();
-  }
+  tg.exitFullscreen?.();
+  tg.unlockOrientation?.();
   player.classList.remove("fullscreen");
-  player.classList.add("normal");
-
-  document.getElementById("controls-player").style.display="flex";
-  document.getElementById("controls-screen").style.display="none";
+  controlsPlayer.style.display="flex";
+  controlsScreen.style.display="none";
 }
 </script>
 
 </body>
-</html>
+</html>a
