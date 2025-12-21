@@ -51,7 +51,7 @@ html,body{
   color:#000;
 }
 
-/* ---------- PLAYER (RED BOX AREA) ---------- */
+/* ---------- PLAYER (FULL RED BOX) ---------- */
 #player{
   display:none;
   position:fixed;
@@ -60,7 +60,6 @@ html,body{
   z-index:999999;
 }
 
-/* FULL IFRAME AREA */
 #playerBox{
   position:absolute;
   inset:0;
@@ -87,13 +86,13 @@ html,body{
   z-index:10;
 }
 
-/* Back button (TOP RIGHT) */
+/* Back (top-right) */
 #btnBack{
   top:12px;
   right:12px;
 }
 
-/* Normal button (BOTTOM RIGHT) */
+/* Fullscreen / Normal (bottom-right) */
 #btnToggle{
   bottom:12px;
   right:12px;
@@ -133,9 +132,8 @@ html,body{
 
     <iframe id="playerFrame" allow="autoplay; fullscreen"></iframe>
 
-    <!-- CONTROLS -->
     <button id="btnBack" class="ctrl" onclick="goBack()">Back</button>
-    <button id="btnToggle" class="ctrl" onclick="toggleNormal()">Normal</button>
+    <button id="btnToggle" class="ctrl" onclick="toggleScreen()">Fullscreen</button>
 
   </div>
 </div>
@@ -149,8 +147,9 @@ const API = "https://watch-two-rho.vercel.app/api/get-video";
 const videoId = tg.initDataUnsafe?.start_param || "vid_test";
 
 let videoURL = "";
+let isFullscreen = false;
 
-/* LOAD VIDEO */
+/* LOAD VIDEO INFO */
 (async ()=>{
   try{
     const r = await fetch(`${API}?video_id=${videoId}`);
@@ -167,10 +166,10 @@ let videoURL = "";
   }
 })();
 
-/* WATCH FLOW */
+/* WATCH */
 async function watch(){
-  watchBtn.disabled=true;
-  watchBtn.textContent="Loading…";
+  watchBtn.disabled = true;
+  watchBtn.textContent = "Loading…";
 
   preloadIframe();
   await showAdSafe(6000);
@@ -178,7 +177,7 @@ async function watch(){
 }
 
 function preloadIframe(){
-  loader.style.display="flex";
+  loader.style.display = "flex";
   playerFrame.src =
     "https://playterabox.com/embed/player?url=" +
     encodeURIComponent(videoURL);
@@ -199,22 +198,43 @@ function showAdSafe(ms){
 
 /* OPEN PLAYER */
 function openPlayer(){
-  watchUI.style.display="none";
-  player.style.display="block";
+  watchUI.style.display = "none";
+  player.style.display = "block";
+  isFullscreen = false;
+  btnToggle.textContent = "Fullscreen";
 }
 
-/* CLOSE PLAYER */
+/* BACK / CLOSE */
 function goBack(){
-  playerFrame.src="";
-  player.style.display="none";
-  watchUI.style.display="block";
-  watchBtn.disabled=false;
-  watchBtn.textContent="Watch Video 🎬";
+  exitFullscreen();
+  playerFrame.src = "";
+  player.style.display = "none";
+  watchUI.style.display = "block";
+  watchBtn.disabled = false;
+  watchBtn.textContent = "Watch Video 🎬";
 }
 
-/* NORMAL BUTTON (just closes fullscreen player) */
-function toggleNormal(){
-  goBack();
+/* FULLSCREEN TOGGLE */
+function toggleScreen(){
+  if(isFullscreen){
+    exitFullscreen();
+  }else{
+    enterFullscreen();
+  }
+}
+
+function enterFullscreen(){
+  tg.requestFullscreen?.();
+  tg.lockOrientation?.();
+  isFullscreen = true;
+  btnToggle.textContent = "Normal";
+}
+
+function exitFullscreen(){
+  tg.exitFullscreen?.();
+  tg.unlockOrientation?.();
+  isFullscreen = false;
+  btnToggle.textContent = "Fullscreen";
 }
 </script>
 
