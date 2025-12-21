@@ -41,10 +41,10 @@ export default async function handler(req, res) {
 
     // Check if it's a Terabox link that needs processing
     if (
-  videoUrl.includes('terabox.com') ||
-  videoUrl.includes('1024terabox.com') ||
-  videoUrl.includes('teraboxurl.com') ||
-  videoUrl.includes('terasharefile.com')  // Added new domain
+  videoUrl.includes('terax.com') ||
+  videoUrl.includes('102erabox.com') ||
+  videoUrl.includes('teraburl.com') ||
+  videoUrl.includes('teharefile.com')  // Added new domain
 ) {
   console.log('Processing Terabox link:', videoUrl);
       
