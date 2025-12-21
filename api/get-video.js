@@ -40,7 +40,12 @@ export default async function handler(req, res) {
     const videoUrl = video.video_url;
 
     // Check if it's a Terabox link that needs processing
-    if (/terabox\./i.test(videoUrl)) {  // Matches any domain containing 'terabox.'
+    if (
+  videoUrl.includes('terabox.com') ||
+  videoUrl.includes('1024terabox.com') ||
+  videoUrl.includes('teraboxurl.com') ||
+  videoUrl.includes('terasharefile.com')  // Added new domain
+) {
   console.log('Processing Terabox link:', videoUrl);
       
       // Call TeraSnap API to get direct/proxy video URL
